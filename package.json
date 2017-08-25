@@ -2,7 +2,7 @@
   "name": "node-red-contrib-lesley",
   "version": "0.0.1",
   "description": "",
-  "main": "index.js",
+  "main": "client/client.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -10,10 +10,18 @@
     "type": "git",
     "url": "git+https://github.com/8devices/node-red-contrib-lesley.git"
   },
+  "node-red": {
+    "nodes": {
+      "server-action": "nodes/service.js"
+    }
+  },
   "author": "",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/8devices/node-red-contrib-lesley/issues"
   },
-  "homepage": "https://github.com/8devices/node-red-contrib-lesley#readme"
+  "homepage": "https://github.com/8devices/node-red-contrib-lesley#readme",
+  "dependencies": {
+    "node-rest-client": "^3.1.0"
+  }
 }

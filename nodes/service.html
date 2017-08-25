@@ -1,0 +1,46 @@
+<script type="text/javascript">
+    RED.nodes.registerType("service in", {
+        category: "input",
+        defaults: {
+            name: {value: ""},
+        },
+        inputs: 1,
+        outputs: 2,
+        color: "rgb(75, 190, 255)",
+        label: function () {
+            if (this.name) {
+                return this.name;
+            } else {
+                return "service";
+            }
+        },
+        labelStyle: function() {
+            return this.name?"node_label_italic":"";
+        },
+        icon: "bridge.png",
+    });
+</script>
+
+<script type="text/x-red" data-help-name="service in">
+<p>This node sends requests to read sensors data</p>
+
+<p>Random message can be recieved in input. This message triggers the node to send requests</p>
+<p>First output sends information about sent requests: asynchronic ids, request url.</p>
+<p>Message structure:</p>
+<ul>
+    <li>msg.response_url : Array of response urls (String)</li>
+    <li>msg.id : Array given asynchronic id</li>
+</ul>
+<p>Second output sends information pulled from notifications</p>
+<p>Message structure:</p>
+<ul>
+	<li>msg.payloads : Array of payloads: </li>
+	<ul>
+		<li>msg.payloads[entry].response_url : response url</li>
+		<li>msg.payloads[entry].id : Given asynchronic id</li>
+		<li>msg.payloads[entry].status : Status</li>
+		<li>msg.payloads[entry].payload : Payload</li>
+		<li>msg.payloads[entry].sent_from : String that tells from where request was sent</li>
+    </ul>
+</ul>
+</script>
