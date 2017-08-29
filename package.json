@@ -12,7 +12,8 @@
   },
   "node-red": {
     "nodes": {
-      "server-action": "nodes/service.js"
+      "service": "nodes/service.js",
+      "sensor3800_service" : "nodes/sensor3800_service.js"
     }
   },
   "author": "",

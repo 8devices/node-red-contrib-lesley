@@ -82,6 +82,8 @@ module.exports = function(RED) {
 				msgn.payloads=[];
 				if(data.hasOwnProperty("async-responses")){
 					for(var i = 0; i < data['async-responses'].length; i++){
+						var sent_from_here = false;
+						
 						for(var j = node.data.length - 1; j >= 0; j--){
 							payload={};
 							if(data['async-responses'][i].id == node.data[j]['async-response-id']){
@@ -104,6 +106,7 @@ module.exports = function(RED) {
 								node.send_time.splice(j,1);
 							}
 						}
+						
 						if(!sent_from_here){
 							msgn.payloads.push(data['async-responses'][i]);
 							msgn.payloads[i].sent_from="not 'service' node";
