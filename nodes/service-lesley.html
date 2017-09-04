@@ -1,0 +1,26 @@
+<script type="text/javascript">
+    RED.nodes.registerType("service-lesley", {
+        category: "config",
+        defaults: {
+            name: {value:"service-lesley", required:true},
+        },
+        inputs: 0,
+        outputs: 0,
+        color: "rgb(75, 190, 255)",
+        label: function () {
+            return this.name;
+        },
+    });
+</script>
+
+<script type="text/x-red" data-template-name="service-lesley">
+    <div class="form-row">
+        <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-config-input-name" placeholder="Name">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="service-lesley">
+</script>
+
+
