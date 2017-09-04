@@ -1,0 +1,63 @@
+<script type="text/javascript">
+    RED.nodes.registerType("sensor3800_service in", {
+        category: "input",
+        defaults: {
+            id: {value: ""},
+            interval: {value: 1},
+            measurement: {value:" Temperature"},
+            topic: {value: ""},
+            service: {type: "service-lesley", required: true}
+        },
+        inputs: 0,
+        outputs: 1,
+        color: "rgb(75, 190, 255)",
+        label: function () {
+			return "sensor3800_service";
+        },
+        labelStyle: function() {
+            return this.name?"node_label_italic":"";
+        },
+        icon: "bridge.png",
+    });
+</script>
+
+<script type="text/x-red" data-template-name="sensor3800_service in">
+    <div class="form-row">
+        <label for="node-input-id"> ID</label>
+        <input type="text" id="node-input-id" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-interval"> Every</label>
+        <input type="text" id="node-input-interval" size="2" style="overflow: scroll; width: 40px"></input>
+        <label for="node-input-interval"> minute/minutes</label>
+    </div>
+    <div class="form-row">
+        <label for="node-input-measurement"> Measurement</label>
+        <select id="node-input-measurement">
+		  <option value="temperature">Temperature</option>
+		  <option value="humidity">Humidity</option>
+		</select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-topic">Topic</label>
+        <input type="text" id="node-input-topic">
+    </div>
+    <div class="form-row">
+        <label for="node-input-service"> Service</label>
+        <input type="text" id="node-input-service">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="sensor3800_service in">
+<p>This node sends requests to read sensors 3800 data. Waits for response and then pulls it out and outpusts information.</p>
+<p>How often requests are sent depends on time which can be set in nodes configuration window.</p>
+<p>Message structure:</p>
+<ul>
+	<li>msg.id : Sensors name</li>
+	<li>msg.measurement : Measurement (temperature or humidity)</li>
+	<li>msg.response_url : response url</li>
+	<li>msg.async_id : Given asynchronic id</li>
+	<li>msg.status : Status</li>
+	<li>msg.topic : Topic</li>
+</ul>
+</script>
