@@ -1,53 +1,40 @@
-module.exports = function(RED) {
-    function SensorNode(config) {
-        
-        var coap = require('coap');
-		const Promise = require('promise');
-		var service = require('./service-lesley');
-        RED.nodes.createNode(this, config);
-        var node = this;
-		var Client = require('node-rest-client').Client;
-		var url = "http://localhost:8888/";
-		
-		node.service = RED.nodes.getNode(config.service);
-		
-		var client = new Client();
-		var name = config.id;
-		var measurement = config.measurement;
-		var interval = config.interval;
-		var topic = config.topic;
-		var service_name = config.service;
-		
-        setInterval(function () {
-			var path =  "";
-			if(measurement === "Active power" || measurement === "active power"){
-				path = "/3305/0/5800";	
-			}
-			else if(measurement === "Active energy" || measurement === "active energy"){
-				path = "/3305/0/5805";
-			}
-			else if(measurement === "Reactive energy" || measurement === "Reactive energy"){
-				path = "/3305/0/5810";
-			}
-			else if(measurement === "Reactive power" || measurement === "Reactive power"){
-				path = "/3305/0/5815";
-			}
-			service.get_transaction(url+"endpoints/"+name+path, function (resp) {
-						var msg = {};
-						msg.topic = topic;
-						msg.measurement = measurement;
-						msg.status = resp.status;
-						if(resp.hasOwnProperty("payload")) {
-							/*var hexString = new Buffer(resp.payload, 'base64').toString('hex');
-							var res = hexString.slice(6, 15);
-							var intData = new Uint32Array(1);
-							intData[0] = parseInt(res, 16);
-							var dataAsFloat = new Float32Array(intData.buffer);
-							msg.payload = dataAsFloat[0];*/
-						}
-						node.send(resp);
-				});
-		}, interval * 60000);
-    };
-    RED.nodes.registerType("sensor3700_service in", SensorNode);
-}
+'use strict';
+
+module.exports = function (RED) {
+  function SensorNode(config) {
+    RED.nodes.createNode(this, config);
+    const node = this;
+    const url = 'http://localhost:8888/';
+    node.service = RED.nodes.getNode(config.service);
+    const name = config.id;
+
+    setInterval(() => {
+      let path = '';
+      if (config.measurement === 'Active power' || config.measurement === 'active power') {
+        path = '/3305/1/5800';
+      } else if (config.measurement === 'Active energy' || config.measurement === 'active energy') {
+        path = '/3305/1/5805';
+      } else if (config.measurement === 'Reactive energy' || config.measurement === 'Reactive energy') {
+        path = '/3305/1/5810';
+      } else if (config.measurement === 'Reactive power' || config.measurement === 'Reactive power') {
+        path = '/3305/1/5815';
+      }
+      node.service.get_transaction(`${url}endpoints/${name}${path}`, (resp) => {
+        const msg = {};
+        msg.topic = config.topic;
+        msg.measurement = config.measurement;
+        msg.status = resp.status;
+        if (Object.prototype.hasOwnProperty.call(resp, 'payload')) {
+          const hexString = Buffer.from(resp.payload, 'base64').toString('hex');
+          const res = hexString.slice(6, 15);
+          const intData = new Uint32Array(1);
+          intData[0] = parseInt(res, 16);
+          const dataAsFloat = new Float32Array(intData.buffer);
+          msg.payload = dataAsFloat[0];
+        }
+        node.send(msg);
+      });
+    }, config.interval * 60000);
+  }
+  RED.nodes.registerType('sensor3700_service in', SensorNode);
+};
