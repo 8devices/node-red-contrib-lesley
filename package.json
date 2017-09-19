@@ -28,7 +28,8 @@
   "homepage": "https://github.com/8devices/node-red-contrib-lesley#readme",
   "dependencies": {
     "coap": "^0.21.0",
-    "node-rest-client": "^3.1.0"
+    "node-rest-client": "^3.1.0",
+    "promise": "^8.0.1"
   },
   "devDependencies": {
     "eslint": "^4.6.1",
