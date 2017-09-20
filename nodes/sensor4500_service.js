@@ -21,12 +21,8 @@ module.exports = function (RED) {
           msg.status = resp.status;
         }
         if (Object.prototype.hasOwnProperty.call(resp, 'payload')) {
-          const hexString = Buffer.from(resp.payload, 'base64').toString('hex');
-          const res = hexString.slice(6, 15);
-          const intData = new Uint32Array(1);
-          intData[0] = parseInt(res, 16);
-          const dataAsFloat = new Float32Array(intData.buffer);
-          msg.payload = dataAsFloat[0];
+          const buf = new Buffer(resp.payload, 'base64');
+		  msg.payload = buf.readFloatBE(3);
         }
         node.send(msg);
       });
