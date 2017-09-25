@@ -13,7 +13,6 @@
   "node-red": {
     "nodes": {
       "service-lesley": "nodes/service-lesley.js",
-      "service": "nodes/service.js",
       "sensor3800_service": "nodes/sensor3800_service.js",
       "sensor3700_service": "nodes/sensor3700_service.js",
       "sensor4500_service": "nodes/sensor4500_service.js",
