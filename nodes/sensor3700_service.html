@@ -3,14 +3,15 @@
         category: "input",
         defaults: {
             id: {value: ""},
-            interval: {value: 1},
             measurement: {value: "Active power"},
+            timer: {value: true},
+            interval: {value: 1},
             topic: {value: ""},
             service: {type: "service-lesley", required: true}
         },
-        inputs: 0,
+        inputs: 1,
         outputs: 1,
-        color: "rgb(75, 190, 255)",
+        color: "rgb(7, 206, 100)",
         label: function () {
 			return "sensor3700_service";
         },
@@ -27,18 +28,23 @@
         <input type="text" id="node-input-id" placeholder="Name">
     </div>
     <div class="form-row">
-        <label for="node-input-interval"> Every</label>
-        <input type="text" id="node-input-interval" size="2" style="overflow: scroll; width: 40px"></input>
-        <label for="node-input-interval"> minute/minutes</label>
-    </div>
-    <div class="form-row">
         <label for="node-input-measurement"> Measurement</label>
         <select id="node-input-measurement">
 		  <option value="Active power">Active power</option>
 		  <option value="Active energy">Active energy</option>
 		  <option value="Reactive power">Reactive power</option>
 		  <option value="Reactive energy">Reactive energy</option>
+		  <option value="Relay">Relay</option>
 		</select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-timer">Enable read request timer</label>
+        <input type="checkbox" id="node-input-timer" checked>
+    </div>
+    <div class="form-row">
+        <label for="node-input-interval"> Every</label>
+        <input type="text" id="node-input-interval" size="2" style="overflow: scroll; width: 40px"></input>
+        <label for="node-input-interval"> minute/minutes</label>
     </div>
     <div class="form-row">
         <label for="node-input-topic">Topic</label>
@@ -56,7 +62,7 @@
 <p>Message structure:</p>
 <ul>
 	<li>msg.topic : Topic</li>
-	<li>msg.measurement : Measurement (Active power, active energy, reactive power, reactive energy)</li>
+	<li>msg.measurement : Measurement (Active power, active energy, reactive power, reactive energy, relay)</li>
 	<li>msg.status : Status</li>
 	<li>msg.payload : Payload, value</li>
 </ul>

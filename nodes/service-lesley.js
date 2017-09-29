@@ -25,7 +25,17 @@ module.exports = function (RED) {
         service.pending_transactions.push(trans);
       });
     };
-
+	
+	service.put_transaction = function (UrlTransaction, args, callback) {
+      client.put(UrlTransaction, args, (data) => {
+        /*const trans = {};
+        trans.cb = callback;
+        trans.id = data['async-response-id'];
+        trans.time = (new Date()).getTime();
+        service.pending_transactions.push(trans);*/
+      });
+    };
+	
     service.interval_id = setInterval(() => {
       const test = net.connect(8888, 'localhost', () => {
         client.get(`${url}notification/pull`, (data) => {
