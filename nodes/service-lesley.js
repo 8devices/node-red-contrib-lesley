@@ -25,17 +25,29 @@ module.exports = function (RED) {
         service.pending_transactions.push(trans);
       });
     };
-	
-	service.put_transaction = function (UrlTransaction, args, callback) {
+
+    service.put_transaction = function (UrlTransaction, buff, callback) {
+      const args = {
+        data: buff,
+        headers: { 'Content-Type': 'application/vnd.oma.lwm2m+tlv' },
+      };
+      client.serializers.add({
+        name: 'xxx',
+        isDefault: false,
+        match(req) { return req.headers['Content-Type'] === 'application/vnd.oma.lwm2m+tlv'; },
+        serialize(data, nrcEventEmitter, serializedCallback) {
+          serializedCallback(data);
+        },
+      });
       client.put(UrlTransaction, args, (data) => {
-        /*const trans = {};
+        const trans = {};
         trans.cb = callback;
         trans.id = data['async-response-id'];
         trans.time = (new Date()).getTime();
-        service.pending_transactions.push(trans);*/
+        service.pending_transactions.push(trans);
       });
     };
-	
+
     service.interval_id = setInterval(() => {
       const test = net.connect(8888, 'localhost', () => {
         client.get(`${url}notification/pull`, (data) => {

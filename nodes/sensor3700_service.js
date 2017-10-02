@@ -23,38 +23,40 @@ module.exports = function (RED) {
     }
 
     node.on('input', (msg) => {
-      // if (config.measurement === 'Relay' || config.measurement === 'relay') {
-      /* if (msg.payload) {
-           node.service.put_transaction(`${url}endpoints/${name}${path}`, (resp) => {
-            const data = {};
-            data.topic = config.topic;
-            data.measurement = config.measurement;
-            data.status = resp.status;
-            if (Object.prototype.hasOwnProperty.call(resp, 'payload')) {
-              const buf = Buffer.from(resp.payload, 'base64');
-              data.payload = buf.readIntLE(3);
-            }
-            node.send(data);
-          });
+      if (config.measurement === 'Relay' || config.measurement === 'relay') {
+        let buff;
+        if (msg.payload) {
+          buff = Buffer.from([0xE1, 0x16, 0xDA, 0x01]);
         } else if (!msg.payload) {
-
-        } */
-      // } else {
-      node.service.get_transaction(`${url}endpoints/${name}${path}`, (resp) => {
-        const data = {};
-        data.topic = config.topic;
-        data.measurement = config.measurement;
-        data.status = resp.status;
-        if (Object.prototype.hasOwnProperty.call(resp, 'payload')) {
-          const buf = Buffer.from(resp.payload, 'base64');
-          if (resp.payload !== '') {
-            data.payload = buf.readFloatBE(3);
-          }
+          buff = Buffer.from([0xE1, 0x16, 0xDA, 0x00]);
         }
-        msg = data;
-        node.send(msg);
-      });
-      // }
+        node.service.put_transaction(`${url}endpoints/${name}${path}`, buff, (resp) => {
+          const data = {};
+          data.topic = config.topic;
+          data.measurement = config.measurement;
+          data.status = resp.status;
+          data.value = msg.payload;
+          if (Object.prototype.hasOwnProperty.call(resp, 'payload')) {
+            data.payload = resp.payload;
+          }
+          node.send(data);
+        });
+      } else {
+        node.service.get_transaction(`${url}endpoints/${name}${path}`, (resp) => {
+          const data = {};
+          data.topic = config.topic;
+          data.measurement = config.measurement;
+          data.status = resp.status;
+          if (Object.prototype.hasOwnProperty.call(resp, 'payload')) {
+            const buf = Buffer.from(resp.payload, 'base64');
+            if (resp.payload !== '') {
+              data.payload = buf.readFloatBE(3);
+            }
+          }
+          msg = data;
+          node.send(msg);
+        });
+      }
     });
 
     if (EnableTimer) {
