@@ -2,7 +2,7 @@
     RED.nodes.registerType("sensor3700_service in", {
         category: "input",
         defaults: {
-            id: {value: ""},
+            uuid: {value: "", required: true},
             measurement: {value: "Active power"},
             timer: {value: true},
             interval: {value: 1},
@@ -24,8 +24,8 @@
 
 <script type="text/x-red" data-template-name="sensor3700_service in">
     <div class="form-row">
-        <label for="node-input-id"> ID</label>
-        <input type="text" id="node-input-id" placeholder="Name">
+        <label for="node-input-uuid"> UUID</label>
+        <input type="text" id="node-input-uuid" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
     </div>
     <div class="form-row">
         <label for="node-input-measurement"> Measurement</label>
