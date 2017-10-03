@@ -11,15 +11,15 @@ module.exports = function (RED) {
 
     let path = '';
     if (config.measurement === 'Active power' || config.measurement === 'active power') {
-      path = '/3305/1/5800';
+      path = '/3305/0/5800';
     } else if (config.measurement === 'Active energy' || config.measurement === 'active energy') {
-      path = '/3305/1/5805';
+      path = '/3305/0/5805';
     } else if (config.measurement === 'Reactive energy' || config.measurement === 'reactive energy') {
-      path = '/3305/1/5810';
+      path = '/3305/0/5810';
     } else if (config.measurement === 'Reactive power' || config.measurement === 'reactive power') {
-      path = '/3305/1/5815';
+      path = '/3305/0/5815';
     } else if (config.measurement === 'Relay' || config.measurement === 'relay') {
-      path = '/3312/1/5850';
+      path = '/3312/0/5850';
     }
 
     node.on('input', (msg) => {
