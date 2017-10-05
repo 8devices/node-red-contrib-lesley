@@ -26,7 +26,9 @@
   },
   "homepage": "https://github.com/8devices/node-red-contrib-lesley#readme",
   "dependencies": {
+    "body-parser": "^1.18.2",
     "coap": "^0.21.0",
+    "express": "^4.16.1",
     "node-rest-client": "^3.1.0",
     "promise": "^8.0.1"
   },

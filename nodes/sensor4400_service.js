@@ -16,21 +16,23 @@ module.exports = function (RED) {
       if (config.measurement === 'Magnetic field' || config.measurement === 'Magnetic field') {
         path = '/3200/0/5500';
       }
-      if (node.service.status) {
-        node.service.get_transaction(`${url}endpoints/${name}${path}`, (resp) => {
-          const msg = {};
-          msg.topic = config.topic;
-          msg.measurement = config.measurement;
-          msg.status = resp.status;
-          if (Object.prototype.hasOwnProperty.call(resp, 'payload')) {
+      node.service.get_transaction(`${url}endpoints/${name}${path}`, (resp) => {
+        const msg = {};
+        msg.topic = config.topic;
+        msg.measurement = config.measurement;
+        msg.status = resp.status;
+        if (Object.prototype.hasOwnProperty.call(resp, 'payload')) {
+          if (resp.payload !== '') {
             const buf = Buffer.from(resp.payload, 'base64');
             msg.payload = buf.readFloatBE(3);
           }
-          node.send(msg);
-        });
-      } else {
+        }
+        node.send(msg);
+      });
+      if (!node.service.status) {
         const msg = {};
         msg.payload = node.service.error;
+        msg.server = node.service.ServerEx;
         node.send(msg);
       }
     }, config.interval * 60000);
