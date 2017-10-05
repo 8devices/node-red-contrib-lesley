@@ -6,7 +6,7 @@ module.exports = function (RED) {
     const node = this;
     const url = 'http://localhost:8888/';
     node.service = RED.nodes.getNode(config.service);
-    const name = config.id;
+    const name = config.uuid;
 
     node.interval_id = setInterval(() => {
       let path = '';
