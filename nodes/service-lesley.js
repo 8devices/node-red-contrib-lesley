@@ -20,23 +20,34 @@ module.exports = function (RED) {
     this.express = express();
     this.express.use(parser.json());
 
-    /* 
-     *
-     * Callback checking
-     *  
-     *service.interval_id = setInterval(() => {
+    service.PutPromises = [];
+    service.GetPromises = [];
 
-      let GetCallbackRequest = client.get(`${url}/notification/callback`, (data, response) => {
-            service.NotificationCallback = true;
+    const args = {
+      data: {
+        url: 'http://localhost:5727/notification',
+        headers: {},
+      },
+      headers: { 'Content-Type': 'application/json' },
+    };
+
+    service.interval_id = setInterval(() => {
+      const GetCallbackRequest = client.get(`${url}/notification/callback`, (data, response) => {
+        if (response.statusCode === 404) {
+          const CallbackRequest = client.put(`${url}/notification/callback`, args, () => {
+            service.status = true;
+          });
+          CallbackRequest.on('error', (ex) => {
+            service.error = ex;
+            service.status = false;
           });
         }
       });
       GetCallbackRequest.on('error', (ex) => {
         service.error = ex;
         service.status = false;
-        service.NotificationCallback = false;
       });
-    }, 1000); */
+    }, 1000);
 
     this.express.put('/notification', (req, resp) => {
       if (Object.prototype.hasOwnProperty.call(req.body, 'async-responses')) {
@@ -56,65 +67,60 @@ module.exports = function (RED) {
 
     this.server = this.express.listen(5727);
 
-    const args = {
-      data: {
-        url: 'http://localhost:5727/notification',
-        headers: {},
-      },
-      headers: { 'Content-Type': 'application/json' },
-    };
-
-    const CallbackRequest = client.put(`${url}/notification/callback`, args, () => {
-      service.status = true;
-      service.NotificationCallback = true;
-    });
-
-    CallbackRequest.on('error', (err) => {
-      service.error = err;
-      service.status = false;
-    });
-
     service.get_transaction = function (UrlTransaction, callback) {
-      const GetRequest = client.get(UrlTransaction, (data) => {
-        service.status = true;
-        const trans = {};
-        trans.cb = callback;
-        trans.id = data['async-response-id'];
-        trans.time = (new Date()).getTime();
-        service.pending_transactions.push(trans);
-      });
-      GetRequest.on('error', (err) => {
-        service.error = err;
-        service.status = false;
-      });
+      function GetPromise() {
+        return new Promise(((fullfill) => {
+          const GetRequest = client.get(UrlTransaction, (data) => {
+            service.status = true;
+            const trans = {};
+            trans.cb = callback;
+            trans.id = data['async-response-id'];
+            trans.time = (new Date()).getTime();
+            service.pending_transactions.push(trans);
+            fullfill();
+          });
+          GetRequest.on('error', (err) => {
+            service.error = err;
+            service.status = false;
+            fullfill();
+          });
+        }));
+      }
+      service.GetPromises.push(GetPromise());
     };
 
     service.put_transaction = function (UrlTransaction, buff, callback) {
-      const arg = {
-        data: buff,
-        headers: { 'Content-Type': 'application/vnd.oma.lwm2m+tlv' },
-      };
-      client.serializers.add({
-        name: 'xxx',
-        isDefault: false,
-        match(req) { return req.headers['Content-Type'] === 'application/vnd.oma.lwm2m+tlv'; },
-        serialize(data, nrcEventEmitter, serializedCallback) {
-          serializedCallback(data);
-        },
-      });
-      const PutRequest = client.put(UrlTransaction, arg, (data) => {
-        service.status = true;
-        const trans = {};
-        trans.cb = callback;
-        trans.id = data['async-response-id'];
-        trans.time = (new Date()).getTime();
-        service.pending_transactions.push(trans);
-      });
-
-      PutRequest.on('error', (err) => {
-        service.error = err;
-        service.status = false;
-      });
+      function PutPromise() {
+        return new Promise(((fullfill) => {
+          const arg = {
+            data: buff,
+            headers: { 'Content-Type': 'application/vnd.oma.lwm2m+tlv' },
+          };
+          client.serializers.add({
+            name: 'xxx',
+            isDefault: false,
+            match(req) { return req.headers['Content-Type'] === 'application/vnd.oma.lwm2m+tlv'; },
+            serialize(data, nrcEventEmitter, serializedCallback) {
+              serializedCallback(data);
+            },
+          });
+          const PutRequest = client.put(UrlTransaction, arg, (data) => {
+            service.status = true;
+            const trans = {};
+            trans.cb = callback;
+            trans.id = data['async-response-id'];
+            trans.time = (new Date()).getTime();
+            service.pending_transactions.push(trans);
+            fullfill();
+          });
+          PutRequest.on('error', (err) => {
+            service.error = err;
+            service.status = false;
+            fullfill();
+          });
+        }));
+      }
+      service.PutPromises.push(PutPromise());
     };
   }
   RED.nodes.registerType('service-lesley', LesleyService);

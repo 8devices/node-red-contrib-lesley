@@ -41,6 +41,13 @@ module.exports = function (RED) {
           }
           node.send(data);
         });
+        Promise.all(node.service.PutPromises).then(() => {
+          if (!node.service.status) {
+            const ErrorMsg = {};
+            ErrorMsg.payload = node.service.error;
+            node.error(ErrorMsg);
+          }
+        });
       } else {
         node.service.get_transaction(`${url}endpoints/${name}${path}`, (resp) => {
           const data = {};
@@ -55,6 +62,13 @@ module.exports = function (RED) {
           }
           msg = data;
           node.send(msg);
+        });
+        Promise.all(node.service.GetPromises).then(() => {
+          if (!node.service.status) {
+            const ErrorMsg = {};
+            ErrorMsg.payload = node.service.error;
+            node.error(ErrorMsg);
+          }
         });
       }
     });
@@ -76,12 +90,13 @@ module.exports = function (RED) {
           }
           node.send(msg);
         });
-        if (!node.service.status) {
-          const msg = {};
-          msg.payload = node.service.error;
-          msg.server = node.service.ServerEx;
-          node.send(msg);
-        }
+        Promise.all(node.service.GetPromises).then(() => {
+          if (!node.service.status) {
+            const ErrorMsg = {};
+            ErrorMsg.payload = node.service.error;
+            node.error(ErrorMsg);
+          }
+        });
       }, config.interval * 60000);
     }
   }
