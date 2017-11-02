@@ -24,31 +24,37 @@ module.exports = function (RED) {
 
     node.on('input', (msg) => {
       if (config.measurement === 'Relay' || config.measurement === 'relay') {
-        let buff;
-        if (msg.payload) {
-          buff = Buffer.from([0xE1, 0x16, 0xDA, 0x01]);
-        } else if (!msg.payload) {
-          buff = Buffer.from([0xE1, 0x16, 0xDA, 0x00]);
+        if (node.service != null) {
+          let buff;
+          if (msg.payload) {
+            buff = Buffer.from([0xE1, 0x16, 0xDA, 0x01]);
+          } else if (!msg.payload) {
+            buff = Buffer.from([0xE1, 0x16, 0xDA, 0x00]);
+          }
+          node.service.put_transaction(`${url}endpoints/${name}${path}`, buff, (resp) => {
+            const data = {};
+            data.topic = config.topic;
+            data.measurement = config.measurement;
+            data.status = resp.status;
+            data.value = msg.payload;
+            if (Object.prototype.hasOwnProperty.call(resp, 'payload')) {
+              data.payload = resp.payload;
+            }
+            node.send(data);
+          });
+          Promise.all(node.service.PutPromises).then(() => {
+            if (!node.service.status) {
+              const ErrorMsg = {};
+              ErrorMsg.payload = node.service.error;
+              node.error(ErrorMsg);
+            }
+          });
+        } else {
+          const ErrorMsg = {};
+          ErrorMsg.payload = 'Error: service is not selected.';
+          node.error(ErrorMsg);
         }
-        node.service.put_transaction(`${url}endpoints/${name}${path}`, buff, (resp) => {
-          const data = {};
-          data.topic = config.topic;
-          data.measurement = config.measurement;
-          data.status = resp.status;
-          data.value = msg.payload;
-          if (Object.prototype.hasOwnProperty.call(resp, 'payload')) {
-            data.payload = resp.payload;
-          }
-          node.send(data);
-        });
-        Promise.all(node.service.PutPromises).then(() => {
-          if (!node.service.status) {
-            const ErrorMsg = {};
-            ErrorMsg.payload = node.service.error;
-            node.error(ErrorMsg);
-          }
-        });
-      } else {
+      } else if (node.service != null) {
         node.service.get_transaction(`${url}endpoints/${name}${path}`, (resp) => {
           const data = {};
           data.topic = config.topic;
@@ -70,34 +76,44 @@ module.exports = function (RED) {
             node.error(ErrorMsg);
           }
         });
+      } else {
+        const ErrorMsg = {};
+        ErrorMsg.payload = 'Error: service is not selected.';
+        node.error(ErrorMsg);
       }
     });
 
     if (EnableTimer) {
-      node.interval_id = setInterval(() => {
-        node.service.get_transaction(`${url}endpoints/${name}${path}`, (resp) => {
-          const msg = {};
-          msg.topic = config.topic;
-          msg.measurement = config.measurement;
-          msg.status = resp.status;
-          if (Object.prototype.hasOwnProperty.call(resp, 'payload')) {
-            const buf = Buffer.from(resp.payload, 'base64');
-            if ((config.measurement === 'Relay' || config.measurement === 'relay') && resp.payload !== '') {
-              msg.payload = buf.readIntLE(3);
-            } else if (resp.payload !== '') {
-              msg.payload = buf.readFloatBE(3);
+      if (node.service != null) {
+        node.interval_id = setInterval(() => {
+          node.service.get_transaction(`${url}endpoints/${name}${path}`, (resp) => {
+            const msg = {};
+            msg.topic = config.topic;
+            msg.measurement = config.measurement;
+            msg.status = resp.status;
+            if (Object.prototype.hasOwnProperty.call(resp, 'payload')) {
+              const buf = Buffer.from(resp.payload, 'base64');
+              if ((config.measurement === 'Relay' || config.measurement === 'relay') && resp.payload !== '') {
+                msg.payload = buf.readIntLE(3);
+              } else if (resp.payload !== '') {
+                msg.payload = buf.readFloatBE(3);
+              }
             }
-          }
-          node.send(msg);
-        });
-        Promise.all(node.service.GetPromises).then(() => {
-          if (!node.service.status) {
-            const ErrorMsg = {};
-            ErrorMsg.payload = node.service.error;
-            node.error(ErrorMsg);
-          }
-        });
-      }, config.interval * 60000);
+            node.send(msg);
+          });
+          Promise.all(node.service.GetPromises).then(() => {
+            if (!node.service.status) {
+              const ErrorMsg = {};
+              ErrorMsg.payload = node.service.error;
+              node.error(ErrorMsg);
+            }
+          });
+        }, config.interval * 60000);
+      } else {
+        const ErrorMsg = {};
+        ErrorMsg.payload = 'Error: service is not selected.';
+        node.error(ErrorMsg);
+      }
     }
   }
   RED.nodes.registerType('sensor3700_service in', SensorNode);
