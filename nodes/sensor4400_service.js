@@ -28,13 +28,13 @@ module.exports = function (RED) {
           if (Object.prototype.hasOwnProperty.call(resp, 'payload')) {
             if (resp.payload !== '') {
               const buf = Buffer.from(resp.payload, 'base64');
-              switch(path) {
+              switch(path){
                 case '/3200/0/5501':
                   msg.payload = buf.readInt32BE(3);
-		  break;
-		default:
+                  break;
+                default:
                   msg.payload = buf.readFloatBE(3);
-	      }
+              }
             }
           }
           node.send(msg);
