@@ -14,8 +14,11 @@ module.exports = function (RED) {
         if (config.measurement === 'Temperature' || config.measurement === 'temperature') {
           path = '/3303/0/5700';
         }
-        if (config.measurement === 'Magnetic field' || config.measurement === 'Magnetic field') {
+        if (config.measurement === 'Magnetic field' || config.measurement === 'magnetic field') {
           path = '/3200/0/5500';
+        }
+        if (config.measurement === 'Magnetic counter' || config.measurement === 'magnetic counter') {
+          path = '/3200/0/5501';
         }
         node.service.get_transaction(`${url}endpoints/${name}${path}`, (resp) => {
           const msg = {};
@@ -25,7 +28,13 @@ module.exports = function (RED) {
           if (Object.prototype.hasOwnProperty.call(resp, 'payload')) {
             if (resp.payload !== '') {
               const buf = Buffer.from(resp.payload, 'base64');
-              msg.payload = buf.readFloatBE(3);
+              switch(path) {
+                case '/3200/0/5501':
+                  msg.payload = buf.readInt32BE(3);
+		  break;
+		default:
+                  msg.payload = buf.readFloatBE(3);
+	      }
             }
           }
           node.send(msg);
