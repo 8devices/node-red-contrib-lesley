@@ -37,7 +37,7 @@ module.exports = function (RED) {
                   break;
                 case '/3200/0/5501':
                   msg.payload = buf.readInt32BE(3);
-                   break;
+                  break;
                 default:
                   msg.payload = buf.readFloatBE(3);
               }
