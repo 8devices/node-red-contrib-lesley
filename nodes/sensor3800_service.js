@@ -25,7 +25,7 @@ module.exports = function (RED) {
           if (Object.prototype.hasOwnProperty.call(resp, 'payload')) {
             if (resp.payload !== '') {
               const buf = Buffer.from(resp.payload, 'base64');
-              switch(path) {
+              switch (path) {
                 case '/3/0/7':
                   msg.payload = buf.readInt32BE(2);
                   break;
