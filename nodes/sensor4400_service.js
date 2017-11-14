@@ -20,6 +20,9 @@ module.exports = function (RED) {
         if (config.measurement === 'Magnetic counter' || config.measurement === 'magnetic counter') {
           path = '/3200/0/5501';
         }
+        if (config.measurement === 'Power source voltage' || config.measurement === 'power source voltage') {
+          path = '/3/0/7';
+        }
         node.service.get_transaction(`${url}endpoints/${name}${path}`, (resp) => {
           const msg = {};
           msg.topic = config.topic;
@@ -28,13 +31,16 @@ module.exports = function (RED) {
           if (Object.prototype.hasOwnProperty.call(resp, 'payload')) {
             if (resp.payload !== '') {
               const buf = Buffer.from(resp.payload, 'base64');
-              switch (path) {
+              switch(path) {
+                case '/3/0/7':
+                  msg.payload = buf.readInt32BE(2);
+                  break;
                 case '/3200/0/5501':
                   msg.payload = buf.readInt32BE(3);
-                  break;
-                default:
+		  break;
+		default:
                   msg.payload = buf.readFloatBE(3);
-              }
+	      }
             }
           }
           node.send(msg);
