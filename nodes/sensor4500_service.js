@@ -14,6 +14,9 @@ module.exports = function (RED) {
         if (config.measurement === 'Voltage' || config.measurement === 'voltage') {
           path = '/3202/0/5600';
         }
+        if (config.measurement === 'Power source voltage' || config.measurement === 'power source voltage') {
+          path = '/3/0/7';
+        }
         node.service.get_transaction(`${url}endpoints/${name}${path}`, (resp) => {
           const msg = {};
           msg.topic = config.topic;
@@ -22,7 +25,13 @@ module.exports = function (RED) {
           if (Object.prototype.hasOwnProperty.call(resp, 'payload')) {
             if (resp.payload !== '') {
               const buf = Buffer.from(resp.payload, 'base64');
-              msg.payload = buf.readFloatBE(3);
+              switch (path) {
+                case '/3/0/7':
+                  msg.payload = buf.readInt32BE(2);
+                  break;
+                default:
+                  msg.payload = buf.readFloatBE(3);
+              }
             }
           }
           node.send(msg);

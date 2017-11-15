@@ -14,6 +14,8 @@ module.exports = function (RED) {
           path = '/3303/0/5700';
         } else if (config.measurement === 'Humidity' || config.measurement === 'humidity') {
           path = '/3304/0/5700';
+        } else if (config.measurement === 'Power source voltage' || config.measurement === 'power source voltage') {
+          path = '/3/0/7';
         }
         node.service.get_transaction(`${url}endpoints/${name}${path}`, (resp) => {
           const msg = {};
@@ -23,7 +25,13 @@ module.exports = function (RED) {
           if (Object.prototype.hasOwnProperty.call(resp, 'payload')) {
             if (resp.payload !== '') {
               const buf = Buffer.from(resp.payload, 'base64');
-              msg.payload = buf.readFloatBE(3);
+              switch (path) {
+                case '/3/0/7':
+                  msg.payload = buf.readInt32BE(2);
+                  break;
+                default:
+                  msg.payload = buf.readFloatBE(3);
+              }
             }
           }
           node.send(msg);
