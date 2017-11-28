@@ -27,7 +27,7 @@ module.exports = function (RED) {
             if (resp.payload !== '') {
               const buf = Buffer.from(resp.payload, 'base64');
               const objectsList = lwm2m.parseTLV(buf);
-	            if ((objectsList.length === 1)
+              if ((objectsList.length === 1)
                   && (objectsList[0].getType() === lwm2m.TYPE_RESOURCE)) {
                 switch (path) {
                   case '/3/0/7':

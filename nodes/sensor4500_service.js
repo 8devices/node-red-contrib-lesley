@@ -5,7 +5,7 @@ module.exports = function (RED) {
     RED.nodes.createNode(this, config);
     const node = this;
     const url = 'http://localhost:8888/';
-    const lwm2m = require('./lwm2m.js');
+    const lwm2m = require('lwm2m.js');
     node.service = RED.nodes.getNode(config.service);
     const name = config.uuid;
 
