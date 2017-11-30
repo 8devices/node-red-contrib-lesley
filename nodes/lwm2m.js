@@ -1,8 +1,17 @@
 'use strict';
+
 const TYPE_OBJECT = 0;
 const TYPE_MULTIPLE_RESOURCE = 1;
 const TYPE_RESOURCE_INSTANCE = 2;
 const TYPE_RESOURCE = 3;
+
+function binaryToInteger(binaryData) {
+  return parseInt(binaryData.toString('hex'), 16);
+}
+
+function binaryToBitString(binaryData) {
+  return binaryToInteger(binaryData).toString(2);
+}
 
 const Instance = class Instance {
   constructor(binaryData) {
@@ -14,20 +23,21 @@ const Instance = class Instance {
     binaryData = binaryData.slice(identifierAndLength[1]);
     this.leftoverData = this.readValue(binaryData).slice(this.valueLength);
   }
-  
+
   readType(binaryData) {
-    let firstByte = (binaryToBitString(binaryData.slice(0, 1))).split("");
-    firstByte = Array(8-firstByte.length).fill('0').concat(firstByte);
+    let firstByte = (binaryToBitString(binaryData.slice(0, 1))).split('');
+    firstByte = Array(8 - firstByte.length).fill('0').concat(firstByte);
     this.type = parseInt(firstByte[0] + firstByte[1], 2);
     const identifierLength = parseInt(firstByte[2], 2) + 1;
     const lengthType = parseInt((firstByte[3] + firstByte[4]), 2);
-    const valueLength = parseInt((firstByte[5] + firstByte[6] + firstByte[7]), 2);
+    const valueLength = parseInt(
+        (firstByte[5] + firstByte[6] + firstByte[7]), 2);
     if(lengthType === 0) {
       this.valueLength = valueLength;
     }
     return [
       identifierLength,
-      lengthType
+      lengthType,
     ];
   }
 
@@ -36,25 +46,26 @@ const Instance = class Instance {
   }
   
   readLength(binaryData, lengthType) {
-    if (lengthType != 0) {
+    if (lengthType !== 0) {
       this.valueLength = binaryToInteger(binaryData.slice(0, lengthType));
     }
   }
-  
+
   readValue(binaryData) {
-    switch(this.type) {
+    switch (this.type) {
       case TYPE_OBJECT:
-        this.valueObject = new Instance(binaryData.slice(0, this.valueLength));
+        this.valueObject = new Instance(
+            binaryData.slice(0, this.valueLength));
         break;
 
       case TYPE_MULTIPLE_RESOURCE:
         // TODO: Add multiple resource instance support (Type 1 and 2)
-        //this contains one of multiple resource values
+        // this contains one of multiple resource values
         break;
 
       case TYPE_RESOURCE_INSTANCE:
         // TODO: Add multiple resource instance support (Type 1 and 2)
-        //this contains multiple resources
+        // this contains multiple resources
         break;
 
       case TYPE_RESOURCE:
@@ -91,10 +102,8 @@ const Instance = class Instance {
   getBooleanValue() {
     if (this.getBinaryValue().slice(-1)) {
       return true;
-    } else {
-      return false;
-    }
-
+    } 
+    return false;
   }
 
   getUnsignedIntegerValue() {
@@ -109,8 +118,8 @@ const Instance = class Instance {
         return this.binaryValue.readUInt32BE(0);
 
       default:
-        return 'Value length is incorrect for integer.'
-      }
+        return 'Value length is incorrect for integer.';
+    }
   }
 
   getIntegerValue() {
@@ -125,8 +134,8 @@ const Instance = class Instance {
         return this.binaryValue.readInt32BE(0);
 
       default:
-        return 'Value length is incorrect for integer.'
-      }
+        return 'Value length is incorrect for integer.';
+    }
   }
 
   getFloatValue() {
@@ -138,8 +147,8 @@ const Instance = class Instance {
         return this.binaryValue.readDoubleBE(0);
 
       default:
-        return 'Value length is incorrect for float.'
-      }
+        return 'Value length is incorrect for float.';
+    }
   }
 
   getStringValue() {
@@ -153,22 +162,14 @@ const Instance = class Instance {
 
 const parseTLV = function parseTLV(binaryData) {
   let objectsList = [];
-  let object = new Instance(binaryData)
+  let object = new Instance(binaryData);
   objectsList.push(object);
-  while(object.getLeftovers().length != 0) {
-    let object = new Instance(object.getLeftovers())
+  while (object.getLeftovers().length !== 0) {
+    object = new Instance(object.getLeftovers())
     objectsList.push(object);
   }
   return objectsList;
 };
-
-function binaryToBitString(binaryData) {
-  return binaryToInteger(binaryData).toString(2);
-}
-
-function binaryToInteger(binaryData) {
-  return parseInt(binaryData.toString('hex'), 16);
-}
 
 module.exports = {
   parseTLV,
@@ -176,5 +177,5 @@ module.exports = {
   TYPE_OBJECT,
   TYPE_MULTIPLE_RESOURCE,
   TYPE_RESOURCE_INSTANCE,
-  TYPE_RESOURCE
-}
+  TYPE_RESOURCE,
+};
