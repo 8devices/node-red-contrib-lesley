@@ -1,11 +1,12 @@
 'use strict';
 
+const lwm2m = require('./lwm2m.js');
+
 module.exports = function (RED) {
   function SensorNode(config) {
     RED.nodes.createNode(this, config);
     const node = this;
     const url = 'http://localhost:8888/';
-    const lwm2m = require('lwm2m.js');
     node.service = RED.nodes.getNode(config.service);
     const name = config.uuid;
 
@@ -36,12 +37,13 @@ module.exports = function (RED) {
               if ((objectsList.length === 1)
                   && (objectsList[0].getType() === lwm2m.TYPE_RESOURCE)) {
                 switch (path) {
-                  case '/3/0/7':
+                  case '/3/0/7': {
                     msg.payload = objectsList[0].getIntegerValue();
                     break;
-
-                  default:
+                  }
+                  default: {
                     msg.payload = objectsList[0].getFloatValue();
+                  }
                 }
               }
             }
