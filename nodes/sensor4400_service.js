@@ -37,13 +37,12 @@ module.exports = function (RED) {
               if ((objectsList.length === 1)
                   && (objectsList[0].getType() === lwm2m.TYPE_RESOURCE)) {
                 switch (path) {
-                  case '/3/0/7': {
+                  case '/3/0/7':
+                  case '/3200/0/5501':
                     msg.payload = objectsList[0].getIntegerValue();
                     break;
-                  }
-                  default: {
+                  default:
                     msg.payload = objectsList[0].getFloatValue();
-                  }
                 }
               }
             }
