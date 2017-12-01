@@ -1,5 +1,7 @@
 'use strict';
 
+const lwm2m = require('./lwm2m.js');
+
 module.exports = function (RED) {
   function SensorNode(config) {
     RED.nodes.createNode(this, config);
@@ -31,15 +33,17 @@ module.exports = function (RED) {
           if (Object.prototype.hasOwnProperty.call(resp, 'payload')) {
             if (resp.payload !== '') {
               const buf = Buffer.from(resp.payload, 'base64');
-              switch (path) {
-                case '/3/0/7':
-                  msg.payload = buf.readInt32BE(2);
-                  break;
-                case '/3200/0/5501':
-                  msg.payload = buf.readInt32BE(3);
-                  break;
-                default:
-                  msg.payload = buf.readFloatBE(3);
+              const objectsList = lwm2m.parseTLV(buf);
+              if ((objectsList.length === 1)
+                  && (objectsList[0].getType() === lwm2m.TYPE_RESOURCE)) {
+                switch (path) {
+                  case '/3/0/7':
+                  case '/3200/0/5501':
+                    msg.payload = objectsList[0].getIntegerValue();
+                    break;
+                  default:
+                    msg.payload = objectsList[0].getFloatValue();
+                }
               }
             }
           }
