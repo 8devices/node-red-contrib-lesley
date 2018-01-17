@@ -104,7 +104,7 @@ const Instance = class LwM2MInstance {
   }
 
   getBooleanValue() {
-    return this.getBinaryValue() === '0' ? false : true ;
+    return this.getBinaryValue() !== '0';
   }
 
   getUnsignedIntegerValue() {
