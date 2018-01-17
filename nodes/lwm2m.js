@@ -104,57 +104,49 @@ const Instance = class LwM2MInstance {
   }
 
   getBooleanValue() {
-    if (this.getBinaryValue().slice(-1)) {
-      return true;
-    }
-    return false;
+    return this.getBinaryValue() === '0' ? false : true ;
   }
 
   getUnsignedIntegerValue() {
     switch (this.valueLength) {
-      case 1: {
-        return this.binaryValue.readUInt8BE(0);
-      }
-      case 2: {
+      case 0:
+        return 0;
+      case 1:
+        return this.binaryValue.readUInt8(0);
+      case 2:
         return this.binaryValue.readUInt16BE(0);
-      }
-      case 4: {
+      case 4:
         return this.binaryValue.readUInt32BE(0);
-      }
-      default: {
-        return 'Value length is incorrect for integer.';
-      }
+      default:
+        return 'Incorrect integer value length.';
     }
   }
 
   getIntegerValue() {
     switch (this.valueLength) {
-      case 1: {
-        return this.binaryValue.readInt8BE(0);
-      }
-      case 2: {
+      case 0:
+        return 0;
+      case 1:
+        return this.binaryValue.readInt8(0);
+      case 2:
         return this.binaryValue.readInt16BE(0);
-      }
-      case 4: {
+      case 4:
         return this.binaryValue.readInt32BE(0);
-      }
-      default: {
-        return 'Value length is incorrect for integer.';
-      }
+      default:
+        return 'Incorrect integer value length.';
     }
   }
 
   getFloatValue() {
     switch (this.valueLength) {
-      case 4: {
+      case 0:
+        return 0;
+      case 4:
         return this.binaryValue.readFloatBE(0);
-      }
-      case 8: {
+      case 8:
         return this.binaryValue.readDoubleBE(0);
-      }
-      default: {
-        return 'Value length is incorrect for float.';
-      }
+      default:
+        return 'Incorrect float value length.';
     }
   }
 
