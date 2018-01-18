@@ -41,6 +41,9 @@ module.exports = function (RED) {
                   case '/3200/0/5501':
                     msg.payload = objectsList[0].getIntegerValue();
                     break;
+                  case '/3200/0/5500':
+                    msg.payload = objectsList[0].getBooleanValue();
+                    break;
                   default:
                     msg.payload = objectsList[0].getFloatValue();
                 }
