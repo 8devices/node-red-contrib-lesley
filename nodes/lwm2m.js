@@ -122,8 +122,9 @@ const Instance = class LwM2MInstance {
         return ((2 ** 32) * this.binaryValue.readUInt32BE()) + this.binaryValue.readUInt32BE(4);
       default:
         if (this.node !== undefined) {
-          node.error({payload: 'Incorrect integer value length.'});
+          this.node.error({ payload: 'Incorrect integer value length.' });
         }
+        return undefined;
     }
   }
 
@@ -139,8 +140,9 @@ const Instance = class LwM2MInstance {
         return this.binaryValue.readInt32BE();
       default:
         if (this.node !== undefined) {
-          node.error({payload: 'Incorrect integer value length.'});
+          this.node.error({ payload: 'Incorrect integer value length.' });
         }
+        return undefined;
     }
   }
 
@@ -152,8 +154,9 @@ const Instance = class LwM2MInstance {
         return this.binaryValue.readDoubleBE();
       default:
         if (this.node !== undefined) {
-          node.error({payload: 'Incorrect float value length.'});
+          this.node.error({ payload: 'Incorrect float value length.' });
         }
+        return undefined;
     }
   }
 
