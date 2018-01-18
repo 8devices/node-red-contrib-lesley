@@ -117,6 +117,8 @@ const Instance = class LwM2MInstance {
         return this.binaryValue.readUInt16BE();
       case 4:
         return this.binaryValue.readUInt32BE();
+      case 8:
+        return ((2 ** 32) * this.binaryValue.readUInt32BE()) + this.binaryValue.readUInt32BE(4);
       default:
         return 'Incorrect integer value length.';
     }
