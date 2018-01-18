@@ -1,6 +1,6 @@
 'use strict';
 
-const lwm2m = require('./lwm2m');
+const lwm2m = require('./lwm2m.js');
 
 module.exports = function (RED) {
   function SensorNode(config) {
@@ -27,7 +27,7 @@ module.exports = function (RED) {
           if (Object.prototype.hasOwnProperty.call(resp, 'payload')) {
             if (resp.payload !== '') {
               const buf = Buffer.from(resp.payload, 'base64');
-              const objectsList = lwm2m.parseTLV(buf);
+              const objectsList = lwm2m.parseTLV(buf, node);
               if ((objectsList.length === 1)
                   && (objectsList[0].getType() === lwm2m.TYPE_RESOURCE)) {
                 switch (path) {
