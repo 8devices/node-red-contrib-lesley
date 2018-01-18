@@ -107,21 +107,6 @@ const Instance = class LwM2MInstance {
     return this.getBinaryValue() !== '0';
   }
 
-  getUnsignedIntegerValue() {
-    switch (this.valueLength) {
-      case 0:
-        return 0;
-      case 1:
-        return this.binaryValue.readUInt8(0);
-      case 2:
-        return this.binaryValue.readUInt16BE(0);
-      case 4:
-        return this.binaryValue.readUInt32BE(0);
-      default:
-        return 'Incorrect integer value length.';
-    }
-  }
-
   getIntegerValue() {
     switch (this.valueLength) {
       case 0:
