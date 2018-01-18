@@ -112,11 +112,11 @@ const Instance = class LwM2MInstance {
       case 0:
         return 0;
       case 1:
-        return this.binaryValue.readUInt8(0);
+        return this.binaryValue.readUInt8();
       case 2:
-        return this.binaryValue.readUInt16BE(0);
+        return this.binaryValue.readUInt16BE();
       case 4:
-        return this.binaryValue.readUInt32BE(0);
+        return this.binaryValue.readUInt32BE();
       default:
         return 'Incorrect integer value length.';
     }
@@ -127,11 +127,11 @@ const Instance = class LwM2MInstance {
       case 0:
         return 0;
       case 1:
-        return this.binaryValue.readInt8(0);
+        return this.binaryValue.readInt8();
       case 2:
-        return this.binaryValue.readInt16BE(0);
+        return this.binaryValue.readInt16BE();
       case 4:
-        return this.binaryValue.readInt32BE(0);
+        return this.binaryValue.readInt32BE();
       default:
         return 'Incorrect integer value length.';
     }
@@ -142,9 +142,9 @@ const Instance = class LwM2MInstance {
       case 0:
         return 0;
       case 4:
-        return this.binaryValue.readFloatBE(0);
+        return this.binaryValue.readFloatBE();
       case 8:
-        return this.binaryValue.readDoubleBE(0);
+        return this.binaryValue.readDoubleBE();
       default:
         return 'Incorrect float value length.';
     }
