@@ -139,8 +139,6 @@ const Instance = class LwM2MInstance {
 
   getFloatValue() {
     switch (this.valueLength) {
-      case 0:
-        return 0;
       case 4:
         return this.binaryValue.readFloatBE();
       case 8:
