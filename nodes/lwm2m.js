@@ -14,7 +14,8 @@ const binToBitStr = function binaryToBitString(binaryData) {
 };
 
 const Instance = class LwM2MInstance {
-  constructor(payload) {
+  constructor(payload, node) {
+    this.node = node;
     let binaryData = payload;
     const identifierAndLength = this.readType(binaryData);
     binaryData = binaryData.slice(1);
@@ -104,57 +105,58 @@ const Instance = class LwM2MInstance {
   }
 
   getBooleanValue() {
-    if (this.getBinaryValue().slice(-1)) {
-      return true;
-    }
-    return false;
+    return this.getBinaryValue() !== '0';
   }
 
   getUnsignedIntegerValue() {
     switch (this.valueLength) {
-      case 1: {
-        return this.binaryValue.readUInt8BE(0);
-      }
-      case 2: {
-        return this.binaryValue.readUInt16BE(0);
-      }
-      case 4: {
-        return this.binaryValue.readUInt32BE(0);
-      }
-      default: {
-        return 'Value length is incorrect for integer.';
-      }
+      case 0:
+        return 0;
+      case 1:
+        return this.binaryValue.readUInt8();
+      case 2:
+        return this.binaryValue.readUInt16BE();
+      case 4:
+        return this.binaryValue.readUInt32BE();
+      case 8:
+        return ((2 ** 32) * this.binaryValue.readUInt32BE()) + this.binaryValue.readUInt32BE(4);
+      default:
+        if (this.node !== undefined) {
+          this.node.error({ payload: 'Incorrect integer value length.' });
+        }
+        return undefined;
     }
   }
 
   getIntegerValue() {
     switch (this.valueLength) {
-      case 1: {
-        return this.binaryValue.readInt8BE(0);
-      }
-      case 2: {
-        return this.binaryValue.readInt16BE(0);
-      }
-      case 4: {
-        return this.binaryValue.readInt32BE(0);
-      }
-      default: {
-        return 'Value length is incorrect for integer.';
-      }
+      case 0:
+        return 0;
+      case 1:
+        return this.binaryValue.readInt8();
+      case 2:
+        return this.binaryValue.readInt16BE();
+      case 4:
+        return this.binaryValue.readInt32BE();
+      default:
+        if (this.node !== undefined) {
+          this.node.error({ payload: 'Incorrect integer value length.' });
+        }
+        return undefined;
     }
   }
 
   getFloatValue() {
     switch (this.valueLength) {
-      case 4: {
-        return this.binaryValue.readFloatBE(0);
-      }
-      case 8: {
-        return this.binaryValue.readDoubleBE(0);
-      }
-      default: {
-        return 'Value length is incorrect for float.';
-      }
+      case 4:
+        return this.binaryValue.readFloatBE();
+      case 8:
+        return this.binaryValue.readDoubleBE();
+      default:
+        if (this.node !== undefined) {
+          this.node.error({ payload: 'Incorrect float value length.' });
+        }
+        return undefined;
     }
   }
 
@@ -167,12 +169,12 @@ const Instance = class LwM2MInstance {
   }
 };
 
-const parseTLV = function parseTLV(binaryData) {
+const parseTLV = function parseTLV(binaryData, node) {
   const objectsList = [];
-  let object = new Instance(binaryData);
+  let object = new Instance(binaryData, node);
   objectsList.push(object);
   while (object.getLeftovers().length !== 0) {
-    object = new Instance(object.getLeftovers());
+    object = new Instance(object.getLeftovers(), node);
     objectsList.push(object);
   }
   return objectsList;
