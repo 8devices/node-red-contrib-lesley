@@ -14,9 +14,9 @@ module.exports = function (RED) {
       path = '/3305/0/5800';
     } else if (config.measurement === 'Active energy' || config.measurement === 'active energy') {
       path = '/3305/0/5805';
-    } else if (config.measurement === 'Reactive energy' || config.measurement === 'reactive energy') {
-      path = '/3305/0/5810';
     } else if (config.measurement === 'Reactive power' || config.measurement === 'reactive power') {
+      path = '/3305/0/5810';
+    } else if (config.measurement === 'Reactive energy' || config.measurement === 'reactive energy') {
       path = '/3305/0/5815';
     } else if (config.measurement === 'Relay' || config.measurement === 'relay') {
       path = '/3312/0/5850';
