@@ -9,11 +9,9 @@ module.exports = function (RED) {
     node.service = RED.nodes.getNode(config.service);
 
     node.powerSourceVoltage = config.powerSourceVoltage ;
-    node.activePower = config.activePower;
-    node.activeEnergy = config.activeEnergy;
-    node.reactivePower = config.reactivePower;
-    node.reactiveEnergy = config.reactiveEnergy;
-    node.relay = config.relay;
+    node.magneticField = config.magneticField;
+    node.magneticCounter = config.magneticCounter;
+    node.temperature = config.temperature;
     node.observe_time = config.interval;
     node.name = config.uuid;
     node.paths = [];
@@ -43,9 +41,9 @@ module.exports = function (RED) {
         });
       }
 
-      if (node.activePower) {
-        //node.paths.push('/3305/0/5800');
-        node.device.observe('/3305/0/5800', (err, resp) => {
+      if (node.magneticField) {
+        //node.paths.push('/3200/0/5500');
+        node.device.observe('/3200/0/5500', (err, resp) => {
           let msg = {};
           msg.response = resp;
           msg.title = "observation response";
@@ -57,9 +55,9 @@ module.exports = function (RED) {
         });
       }
 
-      if (node.activeEnergy) {
-        // node.paths.push('/3305/0/5805');
-        node.device.observe('/3305/0/5805', (err, resp) => {
+      if (node.magneticCounter) {
+        // node.paths.push('/3200/0/5501');
+        node.device.observe('/3200/0/5501', (err, resp) => {
           let msg = {};
           msg.response = resp;
           msg.title = "observation response";
@@ -71,9 +69,9 @@ module.exports = function (RED) {
         });
       }
 
-      if (node.reactivePower) {
-        // node.paths.push('/3305/0/5815');
-        node.device.observe('/3305/0/5815', (err, resp) => {
+      if (node.temperature) {
+        //node.paths.push('/3300/0/5700');
+        node.device.observe('/3300/0/5700', (err, resp) => {
           let msg = {};
           msg.response = resp;
           msg.title = "observation response";
@@ -84,37 +82,8 @@ module.exports = function (RED) {
           node.send(msg);
         });
       }
-
-      if (node.reactiveEnergy) {
-        // node.paths.push('/3305/0/5810');
-        node.device.observe('/3305/0/5810', (err, resp) => {
-          let msg = {};
-          msg.response = resp;
-          msg.title = "observation response";
-          const buf = Buffer.from(resp, 'base64');
-          let state = buf[3]; // TODO: parse TLV
-          msg.payload = state;
-          node.error(err);
-          node.send(msg);
-        });
-      }
-      
-      if (node.relay) {
-        // node.paths.push('/3312/0/5850');
-        node.device.observe('/3312/0/5850', (err, resp) => {
-          let msg = {};
-          msg.response = resp;
-          msg.title = "observation response";
-          const buf = Buffer.from(resp, 'base64');
-          let state = buf[3]; // TODO: parse TLV
-          msg.payload = state;
-          node.error(err);
-          node.send(msg);
-        });
-      }
-
       //const PutRequest = node.device.put('/1/0/3', node.period, (data) => {
     }
   // }
-  RED.nodes.registerType('sensor3700 in', SensorNode);
+  RED.nodes.registerType('sensor4400 in', SensorNode);
 };
