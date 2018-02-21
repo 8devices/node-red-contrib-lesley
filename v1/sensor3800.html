@@ -1,0 +1,72 @@
+<script type="text/javascript">
+    RED.nodes.registerType("sensor3800 in", {
+        category: "input",
+        defaults: {
+            uuid: {value: "", required: true},
+            interval: {value: 60},
+            powerSourceVoltage: {value: false},
+            temperature: {value: false},
+            humidity: {value: false},
+            topic: {value: ""},
+            service: {type: "lesley-service", required: true}
+        },
+        inputs: 0,
+        outputs: 1,
+        color: "rgb(204, 204, 0)",
+        label: function () {
+			return "sensor3800";
+        },
+        labelStyle: function() {
+            return this.name?"node_label_italic":"";
+        },
+        icon: "bridge.png",
+    });
+</script>
+
+<script type="text/x-red" data-template-name="sensor3800 in">
+    <div class="form-row">
+        <label for="node-input-uuid"> UUID</label>
+        <input type="text" id="node-input-uuid" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+    </div>
+    <div class="form-row">
+        <label for="node-input-service"> Service</label>
+        <input type="text" id="node-input-service">
+    </div>
+    <div class="form-row">
+        <label for="node-input-measurement"> Measurements:</label>
+    </div>
+    <div class="form-row">
+        <input type="checkbox" id="node-input-powerSourceVoltage" style="width: auto" checked>
+        <label for="node-input-powerSourceVoltage" style="width: auto">Power source voltage</label>
+    </div>
+    <div class="form-row">
+        <input type="checkbox" id="node-input-temperature" style="width: auto" checked>
+        <label for="node-input-temperature" style="width: auto">Temperature</label>
+    </div>
+    <div class="form-row">
+        <input type="checkbox" id="node-input-humidity" style="width: auto" checked>
+        <label for="node-input-humidity" style="width: auto">Humidity</label>
+    </div>
+    <div class="form-row">
+        <label for="node-input-interval"> Observation time: </label>
+        <input type="text" id="node-input-interval" size="60" style="overflow: scroll; width: 40px"></input>
+        <label for="node-input-interval"> seconds</label>
+    </div>
+    <div class="form-row">
+        <label for="node-input-topic">Topic</label>
+        <input type="text" id="node-input-topic">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="sensor3800 in">
+<p>This node sends requests to read sensors 3800 data. Waits for response and then pulls it out and outpusts information.</p>
+<p>How often requests are sent depends on time which can be set in nodes configuration window.</p>
+<p>Message structure:</p>
+<ul>
+	<li>msg.topic : Topic</li>
+	<li>msg.measurement : Measurement (Power source voltage, temperature, humidity)</li>
+	<li>msg.status : Status</li>
+	<li>msg.payload : Payload, value</li>
+	<li>msg.async_id : Given asynchronic id</li>
+</ul>
+</script>

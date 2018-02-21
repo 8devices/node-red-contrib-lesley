@@ -1,0 +1,67 @@
+<script type="text/javascript">
+    RED.nodes.registerType("sensor4500 in", {
+        category: "input",
+        defaults: {
+            uuid: {value: "", required: true},
+            interval: {value: 60},
+            powerSourceVoltage: {value: false},
+            voltage: {value: false},
+            topic: {value: ""},
+            service: {type: "service-rest-api", required: true}
+        },
+        inputs: 0,
+        outputs: 1,
+        color: "rgb(7, 206, 100)",
+        label: function () {
+			return "sensor4500";
+        },
+        labelStyle: function() {
+            return this.name?"node_label_italic":"";
+        },
+        icon: "bridge.png",
+    });
+</script>
+
+<script type="text/x-red" data-template-name="sensor4500 in">
+    <div class="form-row">
+        <label for="node-input-uuid"> UUID</label>
+        <input type="text" id="node-input-uuid" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+    </div>
+    <div class="form-row">
+        <label for="node-input-service"> Service</label>
+        <input type="text" id="node-input-service">
+    </div>
+    <div class="form-row">
+        <label for="node-input-measurement"> Measurements:</label>
+    </div>
+    <div class="form-row">
+		    <input type="checkbox" id="node-input-powerSourceVoltage" style:"width: auto" checked>
+		    <label for="node-input-powerSourceVoltage">Power source voltage</label>
+    </div>
+    <div class="form-row">
+		    <input type="checkbox" id="node-input-voltage" style:"width: auto" checked>
+		    <label for="node-input-voltage">Voltage</label>
+    </div>
+    <div class="form-row">
+        <label for="node-input-interval"> Observation time: </label>
+        <input type="text" id="node-input-interval" size="60" style="overflow: scroll; width: 40px"></input>
+        <label for="node-input-interval"> seconds</label>
+    </div>
+    <div class="form-row">
+        <label for="node-input-topic">Topic</label>
+        <input type="text" id="node-input-topic">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="sensor4500 in">
+<p>This node sends requests to read sensors 4500 data. Waits for response and then pulls it out and outpusts information.</p>
+<p>How often requests are sent depends on time which can be set in nodes configuration window.</p>
+<p>Message structure:</p>
+<ul>
+	<li>msg.topic : Topic</li>
+	<li>msg.measurement : Measurement (Power source voltage, voltage)</li>
+	<li>msg.status : Status</li>
+	<li>msg.payload : Payload, value</li>
+	<li>msg.async_id : Given asynchronic id</li>
+</ul>
+</script>
