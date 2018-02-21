@@ -8,7 +8,7 @@ module.exports = function (RED) {
     const node = this;
     node.service = RED.nodes.getNode(config.service);
 
-    node.powerSourceVoltage = config.powerSourceVoltage ;
+    node.powerSourceVoltage = config.powerSourceVoltage;
     node.magneticField = config.magneticField;
     node.magneticCounter = config.magneticCounter;
     node.temperature = config.temperature;
@@ -27,63 +27,63 @@ module.exports = function (RED) {
     });
 
     // configure() {
-      if (node.powerSourceVoltage) {
-        //node.paths.push('/3/0/7');
-        node.device.observe('/3/0/7', (err, resp) => {
-          let msg = {};
-          msg.response = resp;
-          msg.title = "observation response";
-          const buf = Buffer.from(resp, 'base64');
-          let state = buf[3]; // TODO: parse TLV
-          msg.payload = state;
-          node.error(err);
-          node.send(msg);
-        });
-      }
-
-      if (node.magneticField) {
-        //node.paths.push('/3200/0/5500');
-        node.device.observe('/3200/0/5500', (err, resp) => {
-          let msg = {};
-          msg.response = resp;
-          msg.title = "observation response";
-          const buf = Buffer.from(resp, 'base64');
-          let state = buf[3]; // TODO: parse TLV
-          msg.payload = state;
-          node.error(err);
-          node.send(msg);
-        });
-      }
-
-      if (node.magneticCounter) {
-        // node.paths.push('/3200/0/5501');
-        node.device.observe('/3200/0/5501', (err, resp) => {
-          let msg = {};
-          msg.response = resp;
-          msg.title = "observation response";
-          const buf = Buffer.from(resp, 'base64');
-          let state = buf[3]; // TODO: parse TLV
-          msg.payload = state;
-          node.error(err);
-          node.send(msg);
-        });
-      }
-
-      if (node.temperature) {
-        //node.paths.push('/3300/0/5700');
-        node.device.observe('/3300/0/5700', (err, resp) => {
-          let msg = {};
-          msg.response = resp;
-          msg.title = "observation response";
-          const buf = Buffer.from(resp, 'base64');
-          let state = buf[3]; // TODO: parse TLV
-          msg.payload = state;
-          node.error(err);
-          node.send(msg);
-        });
-      }
-      //const PutRequest = node.device.put('/1/0/3', node.period, (data) => {
+    if (node.powerSourceVoltage) {
+      // node.paths.push('/3/0/7');
+      node.device.observe('/3/0/7', (err, resp) => {
+        const msg = {};
+        msg.response = resp;
+        msg.title = 'observation response';
+        const buf = Buffer.from(resp, 'base64');
+        const state = buf[3]; // TODO: parse TLV
+        msg.payload = state;
+        node.error(err);
+        node.send(msg);
+      });
     }
+
+    if (node.magneticField) {
+      // node.paths.push('/3200/0/5500');
+      node.device.observe('/3200/0/5500', (err, resp) => {
+        const msg = {};
+        msg.response = resp;
+        msg.title = 'observation response';
+        const buf = Buffer.from(resp, 'base64');
+        const state = buf[3]; // TODO: parse TLV
+        msg.payload = state;
+        node.error(err);
+        node.send(msg);
+      });
+    }
+
+    if (node.magneticCounter) {
+      // node.paths.push('/3200/0/5501');
+      node.device.observe('/3200/0/5501', (err, resp) => {
+        const msg = {};
+        msg.response = resp;
+        msg.title = 'observation response';
+        const buf = Buffer.from(resp, 'base64');
+        const state = buf[3]; // TODO: parse TLV
+        msg.payload = state;
+        node.error(err);
+        node.send(msg);
+      });
+    }
+
+    if (node.temperature) {
+      // node.paths.push('/3300/0/5700');
+      node.device.observe('/3300/0/5700', (err, resp) => {
+        const msg = {};
+        msg.response = resp;
+        msg.title = 'observation response';
+        const buf = Buffer.from(resp, 'base64');
+        const state = buf[3]; // TODO: parse TLV
+        msg.payload = state;
+        node.error(err);
+        node.send(msg);
+      });
+    }
+    // const PutRequest = node.device.put('/1/0/3', node.period, (data) => {
+  }
   // }
   RED.nodes.registerType('sensor4400 in', SensorNode);
 };
