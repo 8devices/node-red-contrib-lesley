@@ -1,23 +1,20 @@
 <script type="text/javascript">
-    RED.nodes.registerType("sensor3700 in", {
+    RED.nodes.registerType("sensor3800 in", {
         category: "input",
         defaults: {
             uuid: {value: "", required: true},
             interval: {value: 60},
             powerSourceVoltage: {value: false},
-            activePower: {value: false},
-            activeEnergy: {value: false},
-            reactivePower: {value: false},
-            reactiveEnergy: {value: false},
-            relay: {value: false},
+            temperature: {value: false},
+            humidity: {value: false},
             topic: {value: ""},
             service: {type: "lesley-service", required: true}
         },
-        inputs: 1,
+        inputs: 0,
         outputs: 1,
         color: "rgb(204, 204, 0)",
         label: function () {
-			return "sensor3700";
+			return "sensor3800";
         },
         labelStyle: function() {
             return this.name?"node_label_italic":"";
@@ -26,7 +23,7 @@
     });
 </script>
 
-<script type="text/x-red" data-template-name="sensor3700 in">
+<script type="text/x-red" data-template-name="sensor3800 in">
     <div class="form-row">
         <label for="node-input-uuid"> UUID</label>
         <input type="text" id="node-input-uuid" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
@@ -43,24 +40,12 @@
         <label for="node-input-powerSourceVoltage" style="width: auto">Power source voltage</label>
     </div>
     <div class="form-row">
-        <input type="checkbox" id="node-input-activePower" style="width: auto" checked>
-        <label for="node-input-activePower" style="width: auto">Active power</label>
+        <input type="checkbox" id="node-input-temperature" style="width: auto" checked>
+        <label for="node-input-temperature" style="width: auto">Temperature</label>
     </div>
     <div class="form-row">
-        <input type="checkbox" id="node-input-activeEnergy" style="width: auto" checked>
-        <label for="node-input-activeEnergy" style="width: auto">Active energy</label>
-    </div>
-    <div class="form-row">
-        <input type="checkbox" id="node-input-reactivePower" style="width: auto" checked>
-        <label for="node-input-reactivePower" style="width: auto">Reactive power</label>
-    </div>
-    <div class="form-row">
-        <input type="checkbox" id="node-input-reactiveEnergy" style="width: auto" checked>
-        <label for="node-input-reaciveEnergy" style="width: auto">Reactive energy</label>
-    </div>
-    <div class="form-row">
-        <input type="checkbox" id="node-input-relay" style="width: auto" checked>
-        <label for="node-input-relay" style="width: auto">Relay</label>
+        <input type="checkbox" id="node-input-humidity" style="width: auto" checked>
+        <label for="node-input-humidity" style="width: auto">Humidity</label>
     </div>
     <div class="form-row">
         <label for="node-input-interval"> Observation time: </label>
@@ -73,14 +58,15 @@
     </div>
 </script>
 
-<script type="text/x-red" data-help-name="sensor3700 in">
-<p>This node sends requests to read sensors 3700 data. Waits for response and then pulls it out and outpusts information.</p>
+<script type="text/x-red" data-help-name="sensor3800 in">
+<p>This node sends requests to read sensors 3800 data. Waits for response and then pulls it out and outpusts information.</p>
 <p>How often requests are sent depends on time which can be set in nodes configuration window.</p>
 <p>Message structure:</p>
 <ul>
 	<li>msg.topic : Topic</li>
-	<li>msg.measurement : Measurement (Active power, active energy, reactive power, reactive energy, relay)</li>
+	<li>msg.measurement : Measurement (Power source voltage, temperature, humidity)</li>
 	<li>msg.status : Status</li>
 	<li>msg.payload : Payload, value</li>
+	<li>msg.async_id : Given asynchronic id</li>
 </ul>
 </script>
