@@ -33,7 +33,7 @@ module.exports = function (RED) {
       });
     });
 
-    node.on('register', () => {
+    node.device.on('register', () => {
       const msg = {};
       msg.payload = {};
       node.state = true;
