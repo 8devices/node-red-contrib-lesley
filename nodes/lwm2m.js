@@ -1,10 +1,10 @@
 'use strict';
 
 const INSTANCE_TYPE = {
-  OBJECT = 0,
-  MULTIPLE_RESOURCE = 1,
-  RESOURCE_INSTANCE = 2,
-  RESOURCE = 3,
+  OBJECT: 0,
+  MULTIPLE_RESOURCE: 1,
+  RESOURCE_INSTANCE: 2,
+  RESOURCE: 3,
 };
 
 const RESOURCE_TYPE = {
@@ -18,12 +18,11 @@ const RESOURCE_TYPE = {
 
 function binaryToInteger(binaryData) {
   return parseInt(binaryData.toString('hex'), 16);
-};
+}
 
 function binaryToBitString(binaryData) {
   return binaryToInteger(binaryData).toString(2);
-};
-
+}
 
 function hexBuffer(hexadecimalString) {
   let hexString = '';
@@ -168,7 +167,7 @@ class LwM2MInstance {
   getLeftovers() {
     return this.leftoverData;
   }
-};
+}
 
 class ResourceInstance {
   constructor(identifier, value, type) {
@@ -244,7 +243,6 @@ class ResourceInstance {
   }
 
   getValueBytes() {
-    const value = this.value;
     let valueBuffer;
     let hexBool;
     switch (this.type) {
@@ -253,40 +251,40 @@ class ResourceInstance {
         break;
       }
       case RESOURCE_TYPE.INTEGER: {
-        if (2 ** 7 <= value && value < 2 ** 8) {
-          valueBuffer = hexBuffer(`00${value.toString(16)}`);
+        if (2 ** 7 <= this.value && this.value < 2 ** 8) {
+          valueBuffer = hexBuffer(`00${this.value.toString(16)}`);
           break;
-        } else if (2 ** 15 <= value && value < 2 ** 16) {
-          valueBuffer = hexBuffer(`0000${value.toString(16)}`);
+        } else if (2 ** 15 <= this.value && this.value < 2 ** 16) {
+          valueBuffer = hexBuffer(`0000${this.value.toString(16)}`);
           break;
-        } else if (2 ** 31 <= value && value < 2 ** 32) {
-          valueBuffer = hexBuffer(`00000000${value.toString(16)}`);
+        } else if (2 ** 31 <= this.value && this.value < 2 ** 32) {
+          valueBuffer = hexBuffer(`00000000${this.value.toString(16)}`);
           break;
         }
-        valueBuffer = hexBuffer(value.toString(16));
+        valueBuffer = hexBuffer(this.value.toString(16));
         break;
       }
       case RESOURCE_TYPE.FLOAT: {
         valueBuffer = Buffer.alloc(4);
-        valueBuffer.writeFloatBE(value);
+        valueBuffer.writeFloatBE(this.value);
         break;
       }
       case RESOURCE_TYPE.BOOLEAN: {
-        hexBool = value ? '01' : '00';
+        hexBool = this.value ? '01' : '00';
         valueBuffer = Buffer.from(hexBool, 'hex');
         break;
       }
       case RESOURCE_TYPE.STRING: {
-        valueBuffer = Buffer.from(value, 'ascii');
+        valueBuffer = Buffer.from(this.value, 'ascii');
         break;
       }
       case RESOURCE_TYPE.OPAQUE: {
-        valueBuffer = value;
+        valueBuffer = this.value;
         break;
       }
       default: {
         // Failed to specify type!
-        valueBuffer = Buffer.from(value.toString(16), 'hex');
+        valueBuffer = Buffer.from(this.value.toString(16), 'hex');
       }
     }
     return valueBuffer;
@@ -300,9 +298,7 @@ class ResourceInstance {
       this.getValueBytes(),
     ]);
   }
-
-
-};
+}
 
 function decodeTLV(binaryData, node) {
   const objectsList = [];
@@ -313,10 +309,10 @@ function decodeTLV(binaryData, node) {
     objectsList.push(object);
   }
   return objectsList;
-};
+}
 
 function encodeResourceTLV(identifier, value, resourceType) {
-  let resource = new ResourceInstance(identifier, value, resourceType);
+  const resource = new ResourceInstance(identifier, value, resourceType);
   return resource.getTLVBuffer();
 }
 
