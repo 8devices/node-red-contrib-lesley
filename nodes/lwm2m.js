@@ -315,7 +315,7 @@ function decodeTLV(binaryData, node) {
   return objectsList;
 };
 
-const encodeResourceTLV = function encodeResourceTLV(identifier, value, resourceType) {
+function encodeResourceTLV(identifier, value, resourceType) {
   let resource = new ResourceInstance(identifier, value, resourceType);
   return resource.getTLVBuffer();
 }
