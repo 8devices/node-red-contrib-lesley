@@ -15,7 +15,7 @@ module.exports = function (RED) {
     node.reactivePower = config.reactivePower;
     node.reactiveEnergy = config.reactiveEnergy;
     node.relay = config.relay;
-    node.observe_time = config.interval;
+    node.observationInterval = Number(config.interval);
     node.name = config.uuid;
     node.paths = [];
     node.device = new restAPI.Device(node.service.service, node.name);
@@ -58,7 +58,7 @@ module.exports = function (RED) {
     if (node.powerSourceVoltage) {
       node.device.observe('/3/0/7', (err, resp) => {
         const buffer = Buffer.from(resp, 'base64');
-        const objectsList = lwm2m.parseTLV(buffer, node);
+        const objectsList = lwm2m.decodeTLV(buffer, node);
         const state = objectsList[0].getIntegerValue();
         const msg = {};
         msg.payload = {};
@@ -76,7 +76,7 @@ module.exports = function (RED) {
       node.send(node.activePower);
       node.device.observe('/3305/0/5800', (err, resp) => {
         const buffer = Buffer.from(resp, 'base64');
-        const objectsList = lwm2m.parseTLV(buffer, node);
+        const objectsList = lwm2m.decodeTLV(buffer, node);
         const state = objectsList[0].getFloatValue();
         const msg = {};
         msg.payload = {};
@@ -99,7 +99,7 @@ module.exports = function (RED) {
     if (node.activeEnergy) {
       node.device.observe('/3305/0/5805', (err, resp) => {
         const buffer = Buffer.from(resp, 'base64');
-        const objectsList = lwm2m.parseTLV(buffer, node);
+        const objectsList = lwm2m.decodeTLV(buffer, node);
         const state = objectsList[0].getFloatValue();
         const msg = {};
         msg.payload = {};
@@ -122,7 +122,7 @@ module.exports = function (RED) {
     if (node.reactivePower) {
       node.device.observe('/3305/0/5815', (err, resp) => {
         const buffer = Buffer.from(resp, 'base64');
-        const objectsList = lwm2m.parseTLV(buffer, node);
+        const objectsList = lwm2m.decodeTLV(buffer, node);
         const state = objectsList[0].getFloatValue();
         const msg = {};
         msg.payload = {};
@@ -144,7 +144,7 @@ module.exports = function (RED) {
     if (node.reactiveEnergy) {
       node.device.observe('/3305/0/5810', (err, resp) => {
         const buffer = Buffer.from(resp, 'base64');
-        const objectsList = lwm2m.parseTLV(buffer, node);
+        const objectsList = lwm2m.decodeTLV(buffer, node);
         const state = objectsList[0].getFloatValue();
         const msg = {};
         msg.payload = {};
@@ -166,7 +166,7 @@ module.exports = function (RED) {
     if (node.relay) {
       node.device.observe('/3312/0/5850', (err, resp) => {
         const buffer = Buffer.from(resp, 'base64');
-        const objectsList = lwm2m.parseTLV(buffer, node);
+        const objectsList = lwm2m.decodeTLV(buffer, node);
         const state = objectsList[0].getBooleanValue();
         const msg = {};
         msg.payload = {};
@@ -179,7 +179,9 @@ module.exports = function (RED) {
         node.send(msg);
       });
     }
-    // const PutRequest = node.device.put('/1/0/3', node.period, (data) => {
+
+    node.device.write('/1/0/3', () => {
+    }, lwm2m.encodeResourceTLV(3, node.observationInterval, lwm2m.RESOURCE_TYPE.INTEGER));
   }
   RED.nodes.registerType('sensor3700 in', SensorNode);
   /* function containsObject(obj, list) {

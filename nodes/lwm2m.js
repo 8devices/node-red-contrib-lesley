@@ -304,7 +304,7 @@ class ResourceInstance {
 
 };
 
-const parseTLV = function decodeTLV(binaryData, node) {
+const decodeTLV = function decodeTLV(binaryData, node) {
   const objectsList = [];
   let object = new Instance(binaryData, node);
   objectsList.push(object);
@@ -321,7 +321,7 @@ const encodeResourceTLV = function encodeResourceTLV(identifier, value, resource
 }
 
 module.exports = {
-  parseTLV,
+  decodeTLV,
   encodeResourceTLV,
   Instance,
   RESOURCE_TYPE,

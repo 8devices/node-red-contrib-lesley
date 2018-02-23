@@ -33,7 +33,7 @@ module.exports = function (RED) {
           if (Object.prototype.hasOwnProperty.call(resp, 'payload')) {
             if (resp.payload !== '') {
               const buf = Buffer.from(resp.payload, 'base64');
-              const objectsList = lwm2m.parseTLV(buf, node);
+              const objectsList = lwm2m.decodeTLV(buf, node);
               if ((objectsList.length === 1)
                   && (objectsList[0].getType() === lwm2m.INSTANCE_TYPE.RESOURCE)) {
                 switch (path) {
