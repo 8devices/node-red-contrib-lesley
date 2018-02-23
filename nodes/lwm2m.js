@@ -1,9 +1,11 @@
 'use strict';
 
-const TYPE_OBJECT = 0;
-const TYPE_MULTIPLE_RESOURCE = 1;
-const TYPE_RESOURCE_INSTANCE = 2;
-const TYPE_RESOURCE = 3;
+const INSTANCE_TYPE = {
+  OBJECT = 0,
+  MULTIPLE_RESOURCE = 1,
+  RESOURCE_INSTANCE = 2,
+  RESOURCE = 3,
+};
 
 const RESOURCE_TYPE = {
   NONE: 0,
@@ -70,21 +72,21 @@ const Instance = class LwM2MInstance {
 
   readValue(binaryData) {
     switch (this.type) {
-      case TYPE_OBJECT: {
+      case INSTANCE_TYPE.OBJECT: {
         this.valueObject = new Instance(binaryData.slice(0, this.valueLength));
         break;
       }
-      case TYPE_MULTIPLE_RESOURCE: {
+      case INSTANCE_TYPE.MULTIPLE_RESOURCE: {
         // TODO: Add multiple resource instance support (Type 1 and 2)
         // this contains one of multiple resource values
         break;
       }
-      case TYPE_RESOURCE_INSTANCE: {
+      case INSTANCE_TYPE.RESOURCE_INSTANCE: {
         // TODO: Add multiple resource instance support (Type 1 and 2)
         // this contains multiple resources
         break;
       }
-      case TYPE_RESOURCE: {
+      case INSTANCE_TYPE.RESOURCE: {
         this.binaryValue = binaryData.slice(0, this.valueLength);
         break;
       }
@@ -323,8 +325,5 @@ module.exports = {
   encodeResourceTLV,
   Instance,
   RESOURCE_TYPE,
-  TYPE_OBJECT,
-  TYPE_MULTIPLE_RESOURCE,
-  TYPE_RESOURCE_INSTANCE,
-  TYPE_RESOURCE,
+  INSTANCE_TYPE,
 };
