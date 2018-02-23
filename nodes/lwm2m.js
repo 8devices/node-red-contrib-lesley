@@ -16,11 +16,11 @@ const RESOURCE_TYPE = {
   OPAQUE: 5,
 };
 
-const binaryToInteger = function binaryToInteger(binaryData) {
+function binaryToInteger(binaryData) {
   return parseInt(binaryData.toString('hex'), 16);
 };
 
-const binaryToBitString = function binaryToBitString(binaryData) {
+function binaryToBitString(binaryData) {
   return binaryToInteger(binaryData).toString(2);
 };
 
@@ -34,7 +34,7 @@ function hexBuffer(hexadecimalString) {
   return Buffer.from(hexString, 'hex');
 }
 
-const LwM2MInstance = class LwM2MInstance {
+class LwM2MInstance {
   constructor(payload, node) {
     this.node = node;
     let binaryData = payload;
@@ -304,7 +304,7 @@ class ResourceInstance {
 
 };
 
-const decodeTLV = function decodeTLV(binaryData, node) {
+function decodeTLV(binaryData, node) {
   const objectsList = [];
   let object = new LwM2MInstance(binaryData, node);
   objectsList.push(object);
