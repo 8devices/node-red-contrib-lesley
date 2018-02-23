@@ -1,6 +1,7 @@
 'use strict';
 
 const restAPI = require('restserver-api');
+const lwm2m = require('../nodes/lwm2m.js');
 
 module.exports = function (RED) {
   function SensorNode(config) {
@@ -20,7 +21,7 @@ module.exports = function (RED) {
     node.device = new restAPI.Device(node.service.service, node.name);
     node.powerSourceVoltage = config.powerSourceVoltage;
     node.state = false;
-    node.cache = [];
+    node.cache = {};
     // node.message = {};
     // node.message.payload = {};
 
@@ -38,7 +39,7 @@ module.exports = function (RED) {
       msg.payload = {};
       node.state = true;
       msg.payload.state = node.state;
-      msg.payload.event = {};
+      msg.payload.data = {};
       msg.payload.cache = node.cache;
       node.send(msg);
       // this.configure();
@@ -49,23 +50,23 @@ module.exports = function (RED) {
       msg.payload = {};
       node.state = false;
       msg.payload.state = node.state;
-      msg.payload.event = {};
+      msg.payload.data = {};
       msg.payload.cache = node.cache;
       node.send(msg);
     });
 
     if (node.powerSourceVoltage) {
       node.device.observe('/3/0/7', (err, resp) => {
-        const buf = Buffer.from(resp, 'base64');
-        const state = buf[3]; // TODO: parse TLV
+        const buffer = Buffer.from(resp, 'base64');
+        const objectsList = lwm2m.parseTLV(buffer, node);
+        const state = objectsList[0].getIntegerValue();
         const msg = {};
-        msg.title = 'PSV';
         msg.payload = {};
         msg.payload.state = node.state;
-        msg.payload.event = {
+        msg.payload.data = {
           powerSourceVoltage: state,
         };
-        node.cache.push(msg.payload.event);
+        node.cache.powerSourceVoltage = state;
         msg.payload.cache = node.cache;
         node.send(msg);
       });
@@ -74,16 +75,16 @@ module.exports = function (RED) {
     if (node.activePower) {
       node.send(node.activePower);
       node.device.observe('/3305/0/5800', (err, resp) => {
-        const buf = Buffer.from(resp, 'base64');
-        const state = buf[3]; // TODO: parse TLV
+        const buffer = Buffer.from(resp, 'base64');
+        const objectsList = lwm2m.parseTLV(buffer, node);
+        const state = objectsList[0].getFloatValue();
         const msg = {};
-        msg.title = 'AP';
         msg.payload = {};
         msg.payload.state = node.state;
-        msg.payload.event = {
+        msg.payload.data = {
           activePower: state,
         };
-        node.cache.push(msg.payload.event);
+        node.cache.activePower = state;
         msg.payload.cache = node.cache;
         node.send(msg);
       }).then((data) => {
@@ -97,16 +98,16 @@ module.exports = function (RED) {
 
     if (node.activeEnergy) {
       node.device.observe('/3305/0/5805', (err, resp) => {
-        const buf = Buffer.from(resp, 'base64');
-        const state = buf[3]; // TODO: parse TLV
+        const buffer = Buffer.from(resp, 'base64');
+        const objectsList = lwm2m.parseTLV(buffer, node);
+        const state = objectsList[0].getFloatValue();
         const msg = {};
-        msg.title = 'AE';
         msg.payload = {};
         msg.payload.state = node.state;
-        msg.payload.event = {
+        msg.payload.data = {
           activeEnergy: state,
         };
-        node.cache.push(msg.payload.event);
+        node.cache.activeEnergy = state;
         msg.payload.cache = node.cache;
         node.send(msg);
       }).then((data) => {
@@ -120,16 +121,16 @@ module.exports = function (RED) {
 
     if (node.reactivePower) {
       node.device.observe('/3305/0/5815', (err, resp) => {
-        const buf = Buffer.from(resp, 'base64');
-        const state = buf[3]; // TODO: parse TLV
+        const buffer = Buffer.from(resp, 'base64');
+        const objectsList = lwm2m.parseTLV(buffer, node);
+        const state = objectsList[0].getFloatValue();
         const msg = {};
-        msg.title = 'RP';
         msg.payload = {};
         msg.payload.state = node.state;
-        msg.payload.event = {
+        msg.payload.data = {
           reactivePower: state,
         };
-        node.cache.push(msg.payload.event);
+        node.cache.reactivePower = state;
         msg.payload.cache = node.cache;
         node.send(msg);
       }).then((data) => {
@@ -142,16 +143,16 @@ module.exports = function (RED) {
     }
     if (node.reactiveEnergy) {
       node.device.observe('/3305/0/5810', (err, resp) => {
-        const buf = Buffer.from(resp, 'base64');
-        const state = buf[3]; // TODO: parse TLV
+        const buffer = Buffer.from(resp, 'base64');
+        const objectsList = lwm2m.parseTLV(buffer, node);
+        const state = objectsList[0].getFloatValue();
         const msg = {};
-        msg.title = 'RE';
         msg.payload = {};
         msg.payload.state = node.state;
-        msg.payload.event = {
+        msg.payload.data = {
           reactiveEnergy: state,
         };
-        node.cache.push(msg.payload.event);
+        node.cache.reactiveEnergy = state;
         msg.payload.cache = node.cache;
         node.send(msg);
       }).then((data) => {
@@ -164,16 +165,16 @@ module.exports = function (RED) {
     }
     if (node.relay) {
       node.device.observe('/3312/0/5850', (err, resp) => {
-        const buf = Buffer.from(resp, 'base64');
-        const state = buf[3]; // TODO: parse TLV
+        const buffer = Buffer.from(resp, 'base64');
+        const objectsList = lwm2m.parseTLV(buffer, node);
+        const state = objectsList[0].getBooleanValue();
         const msg = {};
-        msg.title = 'Relay';
         msg.payload = {};
         msg.payload.state = node.state;
-        msg.payload.event = {
+        msg.payload.data = {
           relay: state,
         };
-        node.cache.push(msg.payload.event);
+        node.cache.relay = state;
         msg.payload.cache = node.cache;
         node.send(msg);
       });
