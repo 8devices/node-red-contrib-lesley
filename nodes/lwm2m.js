@@ -34,7 +34,7 @@ function hexBuffer(hexadecimalString) {
   return Buffer.from(hexString, 'hex');
 }
 
-const Instance = class LwM2MInstance {
+const LwM2MInstance = class LwM2MInstance {
   constructor(payload, node) {
     this.node = node;
     let binaryData = payload;
@@ -73,7 +73,7 @@ const Instance = class LwM2MInstance {
   readValue(binaryData) {
     switch (this.type) {
       case INSTANCE_TYPE.OBJECT: {
-        this.valueObject = new Instance(binaryData.slice(0, this.valueLength));
+        this.valueObject = new LwM2MInstance(binaryData.slice(0, this.valueLength));
         break;
       }
       case INSTANCE_TYPE.MULTIPLE_RESOURCE: {
@@ -306,10 +306,10 @@ class ResourceInstance {
 
 const decodeTLV = function decodeTLV(binaryData, node) {
   const objectsList = [];
-  let object = new Instance(binaryData, node);
+  let object = new LwM2MInstance(binaryData, node);
   objectsList.push(object);
   while (object.getLeftovers().length !== 0) {
-    object = new Instance(object.getLeftovers(), node);
+    object = new LwM2MInstance(object.getLeftovers(), node);
     objectsList.push(object);
   }
   return objectsList;
@@ -323,7 +323,7 @@ const encodeResourceTLV = function encodeResourceTLV(identifier, value, resource
 module.exports = {
   decodeTLV,
   encodeResourceTLV,
-  Instance,
+  LwM2MInstance,
   RESOURCE_TYPE,
   INSTANCE_TYPE,
 };
