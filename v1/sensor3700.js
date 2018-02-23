@@ -34,6 +34,10 @@ module.exports = function (RED) {
       });
     });
 
+    node.device.on('update', () => {
+      node.state = true;
+    });
+
     node.device.on('register', () => {
       const msg = {};
       msg.payload = {};
@@ -184,6 +188,11 @@ module.exports = function (RED) {
     }, encodeResourceTLV(3, node.observationInterval, RESOURCE_TYPE.INTEGER));
   }
   RED.nodes.registerType('sensor3700 in', SensorNode);
+  
+  SensorNode.prototype.close = function () {
+    // Stop all observations
+  };
+  
   /* function containsObject(obj, list) {
     let i;
     for (i = 0; i < list.length; i++) {
