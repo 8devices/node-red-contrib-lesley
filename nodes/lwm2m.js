@@ -16,12 +16,12 @@ const RESOURCE_TYPE = {
   OPAQUE: 5,
 };
 
-const binToInt = function binaryToInteger(binaryData) {
+const binaryToInteger = function binaryToInteger(binaryData) {
   return parseInt(binaryData.toString('hex'), 16);
 };
 
-const binToBitStr = function binaryToBitString(binaryData) {
-  return binToInt(binaryData).toString(2);
+const binaryToBitString = function binaryToBitString(binaryData) {
+  return binaryToInteger(binaryData).toString(2);
 };
 
 
@@ -40,7 +40,7 @@ const LwM2MInstance = class LwM2MInstance {
     let binaryData = payload;
     const identifierAndLength = this.readType(binaryData);
     binaryData = binaryData.slice(1);
-    this.identifier = binToInt(binaryData.slice(0, identifierAndLength[0]));
+    this.identifier = binaryToInteger(binaryData.slice(0, identifierAndLength[0]));
     binaryData = binaryData.slice(identifierAndLength[0]);
     this.readLength(binaryData, identifierAndLength[1]);
     binaryData = binaryData.slice(identifierAndLength[1]);
@@ -48,7 +48,7 @@ const LwM2MInstance = class LwM2MInstance {
   }
 
   readType(binaryData) {
-    let typeByte = (binToBitStr(binaryData.slice(0, 1))).split('');
+    let typeByte = (binaryToBitString(binaryData.slice(0, 1))).split('');
     typeByte = Array(8 - typeByte.length).fill('0').concat(typeByte);
     this.type = parseInt(typeByte[0] + typeByte[1], 2);
     const identifierLength = parseInt(typeByte[2], 2) + 1;
@@ -61,12 +61,12 @@ const LwM2MInstance = class LwM2MInstance {
   }
 
   readIdentifier(binaryData, identifierLength) {
-    this.identifier = binToInt(binaryData.slice(0, identifierLength));
+    this.identifier = binaryToInteger(binaryData.slice(0, identifierLength));
   }
 
   readLength(binaryData, lengthType) {
     if (lengthType !== 0) {
-      this.valueLength = binToInt(binaryData.slice(0, lengthType));
+      this.valueLength = binaryToInteger(binaryData.slice(0, lengthType));
     }
   }
 
@@ -122,7 +122,7 @@ const LwM2MInstance = class LwM2MInstance {
   }
 
   getBinaryValue() {
-    return binToBitStr(this.binaryValue);
+    return binaryToBitString(this.binaryValue);
   }
 
   getBooleanValue() {
