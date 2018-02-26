@@ -22,8 +22,6 @@ module.exports = function (RED) {
     node.powerSourceVoltage = config.powerSourceVoltage;
     node.state = false;
     node.cache = {};
-    // node.message = {};
-    // node.message.payload = {};
 
     node.on('input', (msg) => {
       node.device.getObjects().then((data) => {
@@ -190,16 +188,6 @@ module.exports = function (RED) {
   RED.nodes.registerType('sensor3700 in', SensorNode);
   
   SensorNode.prototype.close = function () {
-    // Stop all observations
+    // Stop all observations ??
   };
-  
-  /* function containsObject(obj, list) {
-    let i;
-    for (i = 0; i < list.length; i++) {
-      if (list[i] === obj) {
-        return true;
-      }
-    }
-    return false;
-  } */
 };
