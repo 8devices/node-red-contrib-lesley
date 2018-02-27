@@ -4,6 +4,7 @@
       "sourceType":"script"
     },
     "rules": {
+      "no-restricted-properties": "WARN",
       "no-param-reassign": "WARN" ,
       "no-underscore-dangle": "WARN",
       "prefer-destructuring": ["ERROR", {"object": true, "array": false}]
