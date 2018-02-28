@@ -15,11 +15,11 @@ module.exports = function (RED) {
     node.device = new restAPI.Device(node.service.service, node.name);
 
     node.on('input', () => {
-      node.device.read(node.resourcePath, (response) => {
+      node.device.read(node.resourcePath, (statusCode, payload) => {
         const msg = {};
         msg.payload = {};
         msg.payload.data = {};
-        const buffer = Buffer.from(response, 'base64');
+        const buffer = Buffer.from(payload, 'base64');
         const objectsList = decodeTLV(buffer, node);
         switch (node.resourceType) {
           case 'integer':
