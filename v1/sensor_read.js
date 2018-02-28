@@ -14,7 +14,7 @@ module.exports = function (RED) {
     node.resourceType = config.resourceType;
     node.device = new restAPI.Device(node.service.service, node.name);
 
-    node.on('input', (input) => {
+    node.on('input', () => {
       node.device.read(node.resourcePath, (response) => {
         const msg = {};
         msg.payload = {};
@@ -49,7 +49,6 @@ module.exports = function (RED) {
         node.send(msg);
       });
     });
-
   }
   RED.nodes.registerType('sensor read in', SensorNode);
 };
