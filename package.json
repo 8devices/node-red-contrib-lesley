@@ -14,6 +14,7 @@
     "nodes": {
       "lesley-service": "v1/lesley-service.js",
       "lesley-sensor_read": "v1/sensor_read.js",
+      "lesley-sensor_write": "v1/sensor_write.js",
       "lesley-sensor3700": "v1/sensor3700.js",
       "lesley-sensor3800": "v1/sensor3800.js",
       "lesley-sensor4400": "v1/sensor4400.js",
