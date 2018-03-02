@@ -22,8 +22,143 @@ module.exports = function (RED) {
     node.powerSourceVoltage = config.powerSourceVoltage;
     node.state = false;
     node.cache = {};
-    // node.message = {};
-    // node.message.payload = {};
+
+    function configure() {
+      node.device.write('/1/0/3', () => {
+      }, encodeResourceTLV(3, node.observationInterval, RESOURCE_TYPE.INTEGER));
+
+      if (node.powerSourceVoltage) {
+        node.device.observe('/3/0/7', (err, resp) => {
+          const buffer = Buffer.from(resp, 'base64');
+          const objectsList = decodeTLV(buffer, node);
+          const state = objectsList[0].getIntegerValue();
+          const msg = {};
+          msg.payload = {};
+          msg.payload.state = node.state;
+          msg.payload.data = {
+            powerSourceVoltage: state,
+          };
+          node.cache.powerSourceVoltage = state;
+          msg.payload.cache = node.cache;
+          node.send(msg);
+        }).then(() => {
+        }).catch((err) => {
+          const msg = {};
+          msg.error = err;
+          node.send(msg);
+        });
+      }
+
+      if (node.activePower) {
+        node.send(node.activePower);
+        node.device.observe('/3305/0/5800', (err, resp) => {
+          const buffer = Buffer.from(resp, 'base64');
+          const objectsList = decodeTLV(buffer, node);
+          const state = objectsList[0].getIntegerValue();
+          const msg = {};
+          msg.payload = {};
+          msg.payload.state = node.state;
+          msg.payload.data = {
+            activePower: state,
+          };
+          node.cache.activePower = state;
+          msg.payload.cache = node.cache;
+          node.send(msg);
+        }).then(() => {
+        }).catch((err) => {
+          const msg = {};
+          msg.error = err;
+          node.send(msg);
+        });
+      }
+
+      if (node.activeEnergy) {
+        node.device.observe('/3305/0/5805', (err, resp) => {
+          const buffer = Buffer.from(resp, 'base64');
+          const objectsList = decodeTLV(buffer, node);
+          const state = objectsList[0].getIntegerValue();
+          const msg = {};
+          msg.payload = {};
+          msg.payload.state = node.state;
+          msg.payload.data = {
+            activeEnergy: state,
+          };
+          node.cache.activeEnergy = state;
+          msg.payload.cache = node.cache;
+          node.send(msg);
+        }).then(() => {
+        }).catch((err) => {
+          const msg = {};
+          msg.error = err;
+          node.send(msg);
+        });
+      }
+
+      if (node.reactivePower) {
+        node.device.observe('/3305/0/5815', (err, resp) => {
+          const buffer = Buffer.from(resp, 'base64');
+          const objectsList = decodeTLV(buffer, node);
+          const state = objectsList[0].getIntegerValue();
+          const msg = {};
+          msg.payload = {};
+          msg.payload.state = node.state;
+          msg.payload.data = {
+            reactivePower: state,
+          };
+          node.cache.reactivePower = state;
+          msg.payload.cache = node.cache;
+          node.send(msg);
+        }).then(() => {
+        }).catch((err) => {
+          const msg = {};
+          msg.error = err;
+          node.send(msg);
+        });
+      }
+      if (node.reactiveEnergy) {
+        node.device.observe('/3305/0/5810', (err, resp) => {
+          const buffer = Buffer.from(resp, 'base64');
+          const objectsList = decodeTLV(buffer, node);
+          const state = objectsList[0].getIntegerValue();
+          const msg = {};
+          msg.payload = {};
+          msg.payload.state = node.state;
+          msg.payload.data = {
+            reactiveEnergy: state,
+          };
+          node.cache.reactiveEnergy = state;
+          msg.payload.cache = node.cache;
+          node.send(msg);
+        }).then(() => {
+        }).catch((err) => {
+          const msg = {};
+          msg.error = err;
+          node.send(msg);
+        });
+      }
+      if (node.relay) {
+        node.device.observe('/3312/0/5850', (err, resp) => {
+          const buffer = Buffer.from(resp, 'base64');
+          const objectsList = decodeTLV(buffer, node);
+          const state = objectsList[0].getIntegerValue();
+          const msg = {};
+          msg.title = 'Relay';
+          msg.payload = {};
+          msg.payload.state = node.state;
+          msg.payload.data = {
+            relay: state,
+          };
+          node.cache.relay = state;
+          msg.payload.cache = node.cache;
+          node.send(msg);
+        }).then(() => {
+        }).catch((err) => {
+          const msg = {};
+          msg.error = err;
+          node.send(msg);
+        });
+      }
+    }
 
     node.on('input', (msg) => {
       node.device.getObjects().then((data) => {
@@ -42,7 +177,11 @@ module.exports = function (RED) {
       msg.payload.data = {};
       msg.payload.cache = node.cache;
       node.send(msg);
-      // this.configure();
+      configure();
+    });
+
+    node.device.on('update', () => {
+      node.state = true;
     });
 
     node.device.on('deregister', () => {
@@ -55,142 +194,22 @@ module.exports = function (RED) {
       node.send(msg);
     });
 
-    if (node.powerSourceVoltage) {
-      node.device.observe('/3/0/7', (err, resp) => {
-        const buffer = Buffer.from(resp, 'base64');
-        const objectsList = decodeTLV(buffer, node);
-        const state = objectsList[0].getIntegerValue();
-        const msg = {};
-        msg.payload = {};
-        msg.payload.state = node.state;
-        msg.payload.data = {
-          powerSourceVoltage: state,
-        };
-        node.cache.powerSourceVoltage = state;
-        msg.payload.cache = node.cache;
+    node.device.getObjects().then(() => {
+      const msg = {};
+      msg.payload = `[Sensor3700-${node.device.id}] Sensor is already registered`;
+      node.send(msg);
+      node.state = true;
+      configure();
+    }).catch((err) => {
+      const msg = {};
+      if (err === 404) {
+        msg.payload = `[Sensor3700-${node.device.id}] Sensor is not yet registered. Waiting for registration event...`;
         node.send(msg);
-      });
-    }
-
-    if (node.activePower) {
-      node.send(node.activePower);
-      node.device.observe('/3305/0/5800', (err, resp) => {
-        const buffer = Buffer.from(resp, 'base64');
-        const objectsList = decodeTLV(buffer, node);
-        const state = objectsList[0].getFloatValue();
-        const msg = {};
-        msg.payload = {};
-        msg.payload.state = node.state;
-        msg.payload.data = {
-          activePower: state,
-        };
-        node.cache.activePower = state;
-        msg.payload.cache = node.cache;
-        node.send(msg);
-      }).then((data) => {
-        node.send(data);
-      }).catch((err) => {
-        const msg = {};
-        msg.error = err;
-        node.send(msg);
-      });
-    }
-
-    if (node.activeEnergy) {
-      node.device.observe('/3305/0/5805', (err, resp) => {
-        const buffer = Buffer.from(resp, 'base64');
-        const objectsList = decodeTLV(buffer, node);
-        const state = objectsList[0].getFloatValue();
-        const msg = {};
-        msg.payload = {};
-        msg.payload.state = node.state;
-        msg.payload.data = {
-          activeEnergy: state,
-        };
-        node.cache.activeEnergy = state;
-        msg.payload.cache = node.cache;
-        node.send(msg);
-      }).then((data) => {
-        node.send(data);
-      }).catch((err) => {
-        const msg = {};
-        msg.error = err;
-        node.send(msg);
-      });
-    }
-
-    if (node.reactivePower) {
-      node.device.observe('/3305/0/5815', (err, resp) => {
-        const buffer = Buffer.from(resp, 'base64');
-        const objectsList = decodeTLV(buffer, node);
-        const state = objectsList[0].getFloatValue();
-        const msg = {};
-        msg.payload = {};
-        msg.payload.state = node.state;
-        msg.payload.data = {
-          reactivePower: state,
-        };
-        node.cache.reactivePower = state;
-        msg.payload.cache = node.cache;
-        node.send(msg);
-      }).then((data) => {
-        node.send(data);
-      }).catch((err) => {
-        const msg = {};
-        msg.error = err;
-        node.send(msg);
-      });
-    }
-    if (node.reactiveEnergy) {
-      node.device.observe('/3305/0/5810', (err, resp) => {
-        const buffer = Buffer.from(resp, 'base64');
-        const objectsList = decodeTLV(buffer, node);
-        const state = objectsList[0].getFloatValue();
-        const msg = {};
-        msg.payload = {};
-        msg.payload.state = node.state;
-        msg.payload.data = {
-          reactiveEnergy: state,
-        };
-        node.cache.reactiveEnergy = state;
-        msg.payload.cache = node.cache;
-        node.send(msg);
-      }).then((data) => {
-        node.send(data);
-      }).catch((err) => {
-        const msg = {};
-        msg.error = err;
-        node.send(msg);
-      });
-    }
-    if (node.relay) {
-      node.device.observe('/3312/0/5850', (err, resp) => {
-        const buffer = Buffer.from(resp, 'base64');
-        const objectsList = decodeTLV(buffer, node);
-        const state = objectsList[0].getBooleanValue();
-        const msg = {};
-        msg.payload = {};
-        msg.payload.state = node.state;
-        msg.payload.data = {
-          relay: state,
-        };
-        node.cache.relay = state;
-        msg.payload.cache = node.cache;
-        node.send(msg);
-      });
-    }
-
-    node.device.write('/1/0/3', () => {
-    }, encodeResourceTLV(3, node.observationInterval, RESOURCE_TYPE.INTEGER));
+      }
+    });
   }
   RED.nodes.registerType('sensor3700 in', SensorNode);
-  /* function containsObject(obj, list) {
-    let i;
-    for (i = 0; i < list.length; i++) {
-      if (list[i] === obj) {
-        return true;
-      }
-    }
-    return false;
-  } */
+  SensorNode.prototype.close = function () {
+    // Stop all observations
+  };
 };
