@@ -1,6 +1,7 @@
 'use strict';
 
 const restAPI = require('restserver-api');
+const { RESOURCE_TYPE, encodeResourceTLV, decodeTLV } = require('../nodes/lwm2m.js');
 
 module.exports = function (RED) {
   function SensorNode(config) {
@@ -14,7 +15,7 @@ module.exports = function (RED) {
     node.reactivePower = config.reactivePower;
     node.reactiveEnergy = config.reactiveEnergy;
     node.relay = config.relay;
-    node.observe_time = config.interval;
+    node.observationInterval = Number(config.interval);
     node.name = config.uuid;
     node.paths = [];
     node.device = new restAPI.Device(node.service.service, node.name);
@@ -23,14 +24,18 @@ module.exports = function (RED) {
     node.cache = {};
 
     function configure() {
+      node.device.write('/1/0/3', () => {
+      }, encodeResourceTLV(3, node.observationInterval, RESOURCE_TYPE.INTEGER));
+
       if (node.powerSourceVoltage) {
         node.device.observe('/3/0/7', (err, resp) => {
-          const buf = Buffer.from(resp, 'base64');
-          const state = buf[3]; // TODO: parse TLV
+          const buffer = Buffer.from(resp, 'base64');
+          const objectsList = decodeTLV(buffer, node);
+          const state = objectsList[0].getIntegerValue();
           const msg = {};
           msg.payload = {};
           msg.payload.state = node.state;
-          msg.payload.event = {
+          msg.payload.data = {
             powerSourceVoltage: state,
           };
           node.cache.powerSourceVoltage = state;
@@ -47,12 +52,13 @@ module.exports = function (RED) {
       if (node.activePower) {
         node.send(node.activePower);
         node.device.observe('/3305/0/5800', (err, resp) => {
-          const buf = Buffer.from(resp, 'base64');
-          const state = buf[3]; // TODO: parse TLV
+          const buffer = Buffer.from(resp, 'base64');
+          const objectsList = decodeTLV(buffer, node);
+          const state = objectsList[0].getIntegerValue();
           const msg = {};
           msg.payload = {};
           msg.payload.state = node.state;
-          msg.payload.event = {
+          msg.payload.data = {
             activePower: state,
           };
           node.cache.activePower = state;
@@ -68,12 +74,13 @@ module.exports = function (RED) {
 
       if (node.activeEnergy) {
         node.device.observe('/3305/0/5805', (err, resp) => {
-          const buf = Buffer.from(resp, 'base64');
-          const state = buf[3]; // TODO: parse TLV
+          const buffer = Buffer.from(resp, 'base64');
+          const objectsList = decodeTLV(buffer, node);
+          const state = objectsList[0].getIntegerValue();
           const msg = {};
           msg.payload = {};
           msg.payload.state = node.state;
-          msg.payload.event = {
+          msg.payload.data = {
             activeEnergy: state,
           };
           node.cache.activeEnergy = state;
@@ -89,19 +96,19 @@ module.exports = function (RED) {
 
       if (node.reactivePower) {
         node.device.observe('/3305/0/5815', (err, resp) => {
-          const buf = Buffer.from(resp, 'base64');
-          const state = buf[3]; // TODO: parse TLV
+          const buffer = Buffer.from(resp, 'base64');
+          const objectsList = decodeTLV(buffer, node);
+          const state = objectsList[0].getIntegerValue();
           const msg = {};
           msg.payload = {};
           msg.payload.state = node.state;
-          msg.payload.event = {
+          msg.payload.data = {
             reactivePower: state,
           };
           node.cache.reactivePower = state;
           msg.payload.cache = node.cache;
           node.send(msg);
-        }).then((data) => {
-          node.send(data);
+        }).then(() => {
         }).catch((err) => {
           const msg = {};
           msg.error = err;
@@ -110,12 +117,13 @@ module.exports = function (RED) {
       }
       if (node.reactiveEnergy) {
         node.device.observe('/3305/0/5810', (err, resp) => {
-          const buf = Buffer.from(resp, 'base64');
-          const state = buf[3]; // TODO: parse TLV
+          const buffer = Buffer.from(resp, 'base64');
+          const objectsList = decodeTLV(buffer, node);
+          const state = objectsList[0].getIntegerValue();
           const msg = {};
           msg.payload = {};
           msg.payload.state = node.state;
-          msg.payload.event = {
+          msg.payload.data = {
             reactiveEnergy: state,
           };
           node.cache.reactiveEnergy = state;
@@ -130,13 +138,14 @@ module.exports = function (RED) {
       }
       if (node.relay) {
         node.device.observe('/3312/0/5850', (err, resp) => {
-          const buf = Buffer.from(resp, 'base64');
-          const state = buf[3]; // TODO: parse TLV
+          const buffer = Buffer.from(resp, 'base64');
+          const objectsList = decodeTLV(buffer, node);
+          const state = objectsList[0].getIntegerValue();
           const msg = {};
           msg.title = 'Relay';
           msg.payload = {};
           msg.payload.state = node.state;
-          msg.payload.event = {
+          msg.payload.data = {
             relay: state,
           };
           node.cache.relay = state;
@@ -165,7 +174,7 @@ module.exports = function (RED) {
       msg.payload = {};
       node.state = true;
       msg.payload.state = node.state;
-      msg.payload.event = {};
+      msg.payload.data = {};
       msg.payload.cache = node.cache;
       node.send(msg);
       configure();
@@ -180,7 +189,7 @@ module.exports = function (RED) {
       msg.payload = {};
       node.state = false;
       msg.payload.state = node.state;
-      msg.payload.event = {};
+      msg.payload.data = {};
       msg.payload.cache = node.cache;
       node.send(msg);
     });
