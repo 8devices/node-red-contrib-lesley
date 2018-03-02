@@ -1,4 +1,34 @@
 <script type="text/javascript">
+   function toggleVisibility(id) {
+     const element = document.getElementById(id);
+     if(element.style.display == 'block')
+        element.style.display = 'none';
+     else
+        element.style.display = 'block';
+   }
+
+   function inputSourceHandler(selectionId, textFieldId) {
+     const selectionElement = document.getElementById(selectionId);
+     const textFieldElement = document.getElementById(textFieldId);
+     switch (selectionElement.value) {
+       case 'textbox': {
+         textFieldElement.style.display = 'block';
+         break;
+       }
+
+       case 'input': {
+         textFieldElement.style.display = 'none';
+         break;
+       }
+
+       default: {
+         textFieldElement.style.display = 'none';
+       }
+     }
+   }
+</script>
+
+<script type="text/javascript">
     RED.nodes.registerType("sensor write in", {
         category: "input",
         defaults: {
@@ -37,7 +67,7 @@
     </div>
     <div class="form-row">
         <label for="node-input-valueSource">Value source:</label>
-        <select id="node-input-valueSource">
+        <select id="node-input-valueSource" onchange="inputSourceHandler('node-input-valueSource', 'resourceValueRegion')">
             <option value='textbox'>Textbox</option>
             <option value='input'>Input</option>
         </select>
@@ -52,9 +82,9 @@
             <option value='opaque'>Opaque</option>
         </select>
     </div>
-    <div class="form-row">
+    <div class="form-row" id="resourceValueRegion">
         <label for="node-input-resourceValue">Resource value</label>
-        <input type="text" id="node-input-resourceValue">
+        <input id="node-input-resourceValue">
     </div>
 </script>
 
