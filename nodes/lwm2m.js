@@ -183,11 +183,11 @@ class ResourceInstance {
       case RESOURCE_TYPE.INTEGER:
         if (this.value === 0) {
           return 0;
-        } else if (this.value < (2 ** 7)) {
+        } else if (this.value >> 7 === 0) { // eslint-disable-line no-bitwise
           return 1;
-        } else if (this.value < (2 ** 15)) {
+        } else if (this.value >> 15 === 0) { // eslint-disable-line no-bitwise
           return 2;
-        } else if (this.value < (2 ** 31)) {
+        } else if (this.value >> 31 === 0) { // eslint-disable-line no-bitwise
           return 4;
         }
         return 8;
@@ -223,9 +223,9 @@ class ResourceInstance {
       this.typeByte.lengthType = Math.ceil(lengthBits / 8);
     }
 
-    typeByteInteger += this.typeByte.identifierType * (2 ** 6);
-    typeByteInteger += this.typeByte.identifierLength * (2 ** 5);
-    typeByteInteger += this.typeByte.lengthType * (2 ** 3);
+    typeByteInteger += this.typeByte.identifierType << 6; // eslint-disable-line no-bitwise
+    typeByteInteger += this.typeByte.identifierLength << 5; // eslint-disable-line no-bitwise
+    typeByteInteger += this.typeByte.lengthType << 3; // eslint-disable-line no-bitwise
     typeByteInteger += this.typeByte.valueLength;
 
     return Buffer.from(typeByteInteger.toString(16), 'hex');
@@ -251,13 +251,13 @@ class ResourceInstance {
         break;
       }
       case RESOURCE_TYPE.INTEGER: {
-        if (2 ** 7 <= this.value && this.value < 2 ** 8) {
+        if (this.value >> 7 === 1) { // eslint-disable-line no-bitwise
           valueBuffer = hexBuffer(`00${this.value.toString(16)}`);
           break;
-        } else if (2 ** 15 <= this.value && this.value < 2 ** 16) {
+        } else if (this.value >> 15 === 1) { // eslint-disable-line no-bitwise
           valueBuffer = hexBuffer(`0000${this.value.toString(16)}`);
           break;
-        } else if (2 ** 31 <= this.value && this.value < 2 ** 32) {
+        } else if (this.value >> 15 === 1) { // eslint-disable-line no-bitwise
           valueBuffer = hexBuffer(`00000000${this.value.toString(16)}`);
           break;
         }
