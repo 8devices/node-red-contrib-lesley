@@ -7,6 +7,26 @@
         element.style.display = 'block';
    }
 
+   function requestTypeHandler(selectionId, sectionId) {
+     const selectionElement = document.getElementById(selectionId);
+     const sectionElement = document.getElementById(sectionId);
+     switch (selectionElement.value) {
+       case 'write': {
+         sectionElement.style.display = 'block';
+         break;
+       }
+
+       case 'read': {
+         sectionElement.style.display = 'none';
+         break;
+       }
+
+       default: {
+         sectionElement.style.display = 'none';
+       }
+     }
+   }
+
    function inputSourceHandler(selectionId, textFieldId) {
      const selectionElement = document.getElementById(selectionId);
      const textFieldElement = document.getElementById(textFieldId);
@@ -29,21 +49,22 @@
 </script>
 
 <script type="text/javascript">
-    RED.nodes.registerType("sensor write in", {
+    RED.nodes.registerType("LwM2M request in", {
         category: "input",
         defaults: {
             uuid: {value: "", required: true},
             service: {type: "lesley-service", required: true},
             uri: {value: "", required: true},
+            requestType: {value: "read", required: true},
             resourceType: {value: "integer", required: true},
-            valueSource: {value: "textbox", required: true},
-            resourceValue: {value: "integer"}
+            valueSource: {value: "input", required: true},
+            resourceValue: {value: ""}
         },
         inputs: 1,
         outputs: 1,
         color: "rgb(204, 204, 0)",
         label: function () {
-			return "sensor write";
+			return "LwM2M request";
         },
         labelStyle: function() {
             return this.name?"node_label_italic":"";
@@ -52,7 +73,7 @@
     });
 </script>
 
-<script type="text/x-red" data-template-name="sensor write in">
+<script type="text/x-red" data-template-name="LwM2M request in">
     <div class="form-row">
         <label for="node-input-uuid">UUID</label>
         <input type="text" id="node-input-uuid" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
@@ -62,15 +83,15 @@
         <input type="text" id="node-input-service">
     </div>
     <div class="form-row">
-        <label for="node-input-uri">Resource path</label>
-        <input type="text" id="node-input-uri">
+        <label for="node-input-requestType">Request type</label>
+        <select id="node-input-requestType" onchange="requestTypeHandler('node-input-requestType', 'writeRequestSection')">
+            <option value='read'>Read</option>
+            <option value='write'>Write</option>
+        </select>
     </div>
     <div class="form-row">
-        <label for="node-input-valueSource">Value source:</label>
-        <select id="node-input-valueSource" onchange="inputSourceHandler('node-input-valueSource', 'resourceValueRegion')">
-            <option value='textbox'>Textbox</option>
-            <option value='input'>Input</option>
-        </select>
+        <label for="node-input-uri">Resource path</label>
+        <input type="text" id="node-input-uri">
     </div>
     <div class="form-row">
         <label for="node-input-resourceType">Resource type:</label>
@@ -82,13 +103,22 @@
             <option value='opaque'>Opaque</option>
         </select>
     </div>
+    <div id="writeRequestSection">
+    <div class="form-row">
+        <label for="node-input-valueSource">Value source:</label>
+        <select id="node-input-valueSource" onchange="inputSourceHandler('node-input-valueSource', 'resourceValueRegion')">
+            <option value='textbox'>Textbox</option>
+            <option value='input'>Input</option>
+        </select>
+    </div>
     <div class="form-row" id="resourceValueRegion">
         <label for="node-input-resourceValue">Resource value</label>
         <input id="node-input-resourceValue">
     </div>
+    </div>
 </script>
 
-<script type="text/x-red" data-help-name="sensor write in">
+<script type="text/x-red" data-help-name="LwM2M request in">
 <p>This node sends resource write requests when it receives input.</p>
 <p>Message structure:</p>
 <ul>
