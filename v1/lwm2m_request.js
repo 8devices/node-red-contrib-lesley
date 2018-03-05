@@ -124,7 +124,7 @@ module.exports = function (RED) {
       }
 
       case 'execute': {
-        node.on('input', (input) => {
+        node.on('input', () => {
           node.device.execute(node.resourcePath, (statusCode) => {
             const msg = {};
             msg.payload = {};
