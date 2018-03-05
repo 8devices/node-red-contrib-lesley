@@ -23,140 +23,55 @@ module.exports = function (RED) {
     node.state = false;
     node.cache = {};
 
+    function observe(resourcePath, resourceName, resourceType) {
+      node.device.observe(resourcePath, (err, response) => {
+        const msg = {};
+        const buffer = Buffer.from(response, 'base64');
+        const objectsList = decodeTLV(buffer, node);
+        const resourceValue = objectsList[0].getValue(resourceType);
+        msg.payload = {
+          state: node.state,
+          data: {},
+        };
+
+        msg.payload.data[resourceName] = resourceValue;
+        node.cache[resourceName] = resourceValue;
+        msg.payload.cache = node.cache;
+        node.send(msg);
+      }).then(() => {
+      }).catch((err) => {
+        const msg = {};
+        msg.error = err;
+        node.send(msg);
+      });
+    }
+
     function configure() {
       node.device.write('/1/0/3', () => {
       }, encodeResourceTLV(3, node.observationInterval, RESOURCE_TYPE.INTEGER));
 
       if (node.powerSourceVoltage) {
-        node.device.observe('/3/0/7', (err, resp) => {
-          const buffer = Buffer.from(resp, 'base64');
-          const objectsList = decodeTLV(buffer, node);
-          const state = objectsList[0].getIntegerValue();
-          const msg = {};
-          msg.payload = {};
-          msg.payload.state = node.state;
-          msg.payload.data = {
-            powerSourceVoltage: state,
-          };
-          node.cache.powerSourceVoltage = state;
-          msg.payload.cache = node.cache;
-          node.send(msg);
-        }).then(() => {
-        }).catch((err) => {
-          const msg = {};
-          msg.error = err;
-          node.send(msg);
-        });
+        observe('/3/0/7', 'powerSourceVoltage', RESOURCE_TYPE.INTEGER);
       }
 
       if (node.activePower) {
-        node.send(node.activePower);
-        node.device.observe('/3305/0/5800', (err, resp) => {
-          const buffer = Buffer.from(resp, 'base64');
-          const objectsList = decodeTLV(buffer, node);
-          const state = objectsList[0].getIntegerValue();
-          const msg = {};
-          msg.payload = {};
-          msg.payload.state = node.state;
-          msg.payload.data = {
-            activePower: state,
-          };
-          node.cache.activePower = state;
-          msg.payload.cache = node.cache;
-          node.send(msg);
-        }).then(() => {
-        }).catch((err) => {
-          const msg = {};
-          msg.error = err;
-          node.send(msg);
-        });
+        observe('/3305/0/5800', 'activePower', RESOURCE_TYPE.FLOAT);
       }
 
       if (node.activeEnergy) {
-        node.device.observe('/3305/0/5805', (err, resp) => {
-          const buffer = Buffer.from(resp, 'base64');
-          const objectsList = decodeTLV(buffer, node);
-          const state = objectsList[0].getIntegerValue();
-          const msg = {};
-          msg.payload = {};
-          msg.payload.state = node.state;
-          msg.payload.data = {
-            activeEnergy: state,
-          };
-          node.cache.activeEnergy = state;
-          msg.payload.cache = node.cache;
-          node.send(msg);
-        }).then(() => {
-        }).catch((err) => {
-          const msg = {};
-          msg.error = err;
-          node.send(msg);
-        });
+        observe('/3305/0/5805', 'activeEnergy', RESOURCE_TYPE.FLOAT);
       }
 
       if (node.reactivePower) {
-        node.device.observe('/3305/0/5815', (err, resp) => {
-          const buffer = Buffer.from(resp, 'base64');
-          const objectsList = decodeTLV(buffer, node);
-          const state = objectsList[0].getIntegerValue();
-          const msg = {};
-          msg.payload = {};
-          msg.payload.state = node.state;
-          msg.payload.data = {
-            reactivePower: state,
-          };
-          node.cache.reactivePower = state;
-          msg.payload.cache = node.cache;
-          node.send(msg);
-        }).then(() => {
-        }).catch((err) => {
-          const msg = {};
-          msg.error = err;
-          node.send(msg);
-        });
+        observe('/3305/0/5815', 'reactivePower', RESOURCE_TYPE.FLOAT);
       }
+
       if (node.reactiveEnergy) {
-        node.device.observe('/3305/0/5810', (err, resp) => {
-          const buffer = Buffer.from(resp, 'base64');
-          const objectsList = decodeTLV(buffer, node);
-          const state = objectsList[0].getIntegerValue();
-          const msg = {};
-          msg.payload = {};
-          msg.payload.state = node.state;
-          msg.payload.data = {
-            reactiveEnergy: state,
-          };
-          node.cache.reactiveEnergy = state;
-          msg.payload.cache = node.cache;
-          node.send(msg);
-        }).then(() => {
-        }).catch((err) => {
-          const msg = {};
-          msg.error = err;
-          node.send(msg);
-        });
+        observe('/3305/0/5810', 'reactiveEnergy', RESOURCE_TYPE.FLOAT);
       }
+
       if (node.relay) {
-        node.device.observe('/3312/0/5850', (err, resp) => {
-          const buffer = Buffer.from(resp, 'base64');
-          const objectsList = decodeTLV(buffer, node);
-          const state = objectsList[0].getIntegerValue();
-          const msg = {};
-          msg.title = 'Relay';
-          msg.payload = {};
-          msg.payload.state = node.state;
-          msg.payload.data = {
-            relay: state,
-          };
-          node.cache.relay = state;
-          msg.payload.cache = node.cache;
-          node.send(msg);
-        }).then(() => {
-        }).catch((err) => {
-          const msg = {};
-          msg.error = err;
-          node.send(msg);
-        });
+        observe('/3312/0/5850', 'relay', RESOURCE_TYPE.BOOLEAN);
       }
     }
 
