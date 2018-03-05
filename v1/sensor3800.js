@@ -1,6 +1,7 @@
 'use strict';
 
 const restAPI = require('restserver-api');
+const { RESOURCE_TYPE, encodeResourceTLV, decodeTLV } = require('../nodes/lwm2m.js');
 
 module.exports = function (RED) {
   function SensorNode(config) {
@@ -11,65 +12,94 @@ module.exports = function (RED) {
     node.powerSourceVoltage = config.powerSourceVoltage;
     node.temperature = config.temperature;
     node.humidity = config.humidity;
-    node.observe_time = config.interval;
+    node.observationInterval = Number(config.interval);
     node.name = config.uuid;
     node.paths = [];
     node.device = new restAPI.Device(node.service.service, node.name);
+    node.state = false;
+    node.cache = {};
 
-    node.on('input', (msg) => {
-      node.device.getObjects().then((data) => {
-        node.send(data);
+    function observe(resourcePath, resourceName, resourceType) {
+      node.device.observe(resourcePath, (err, response) => {
+        const msg = {};
+        const buffer = Buffer.from(response, 'base64');
+        const objectsList = decodeTLV(buffer, node);
+        const resourceValue = objectsList[0].getValue(resourceType);
+        msg.payload = {
+          state: node.state,
+          data: {},
+        };
+
+        msg.payload.data[resourceName] = resourceValue;
+        node.cache[resourceName] = resourceValue;
+        msg.payload.cache = node.cache;
+        node.send(msg);
+      }).then(() => {
       }).catch((err) => {
+        const msg = {};
         msg.error = err;
         node.send(msg);
       });
+    }
+
+    function configure() {
+      node.device.write('/1/0/3', () => {
+      }, encodeResourceTLV(3, node.observationInterval, RESOURCE_TYPE.INTEGER));
+
+      if (node.powerSourceVoltage) {
+        observe('/3/0/7', 'powerSourceVoltage', RESOURCE_TYPE.INTEGER);
+      }
+
+      if (node.temperature) {
+        observe('/3303/0/5700', 'temperature', RESOURCE_TYPE.FLOAT);
+      }
+
+      if (node.humidity) {
+        observe('/3304/0/5700', 'humidity', RESOURCE_TYPE.FLOAT);
+      }
+    }
+
+    node.device.on('register', () => {
+      const msg = {};
+      msg.payload = {};
+      node.state = true;
+      msg.payload.state = node.state;
+      msg.payload.data = {};
+      msg.payload.cache = node.cache;
+      node.send(msg);
+      configure();
     });
 
-    // configure() {
-    if (node.powerSourceVoltage) {
-      // node.paths.push('/3/0/7');
-      node.device.observe('/3/0/7', (err, resp) => {
-        const msg = {};
-        msg.response = resp;
-        msg.title = 'observation response';
-        const buf = Buffer.from(resp, 'base64');
-        const state = buf[3]; // TODO: parse TLV
-        msg.payload = state;
-        node.error(err);
-        node.send(msg);
-      });
-    }
+    node.device.on('update', () => {
+      node.state = true;
+    });
 
-    if (node.temperature) {
-      // node.paths.push('/3303/0/5700');
-      node.device.observe('/3303/0/5700', (err, resp) => {
-        const msg = {};
-        msg.response = resp;
-        msg.title = 'observation response';
-        const buf = Buffer.from(resp, 'base64');
-        const state = buf[3]; // TODO: parse TLV
-        msg.payload = state;
-        node.error(err);
-        node.send(msg);
-      });
-    }
+    node.device.on('deregister', () => {
+      const msg = {};
+      msg.payload = {};
+      node.state = false;
+      msg.payload.state = node.state;
+      msg.payload.data = {};
+      msg.payload.cache = node.cache;
+      node.send(msg);
+    });
 
-    if (node.humidity) {
-      // node.paths.push('/3304/0/5700');
-      node.device.observe('/3304/0/5700', (err, resp) => {
-        const msg = {};
-        msg.response = resp;
-        msg.title = 'observation response';
-        const buf = Buffer.from(resp, 'base64');
-        const state = buf[3]; // TODO: parse TLV
-        msg.payload = state;
-        node.error(err);
+    node.device.getObjects().then(() => {
+      const msg = {};
+      msg.payload = `[Sensor3800-${node.device.id}] Sensor is already registered`;
+      node.send(msg);
+      node.state = true;
+      configure();
+    }).catch((err) => {
+      const msg = {};
+      if (err === 404) {
+        msg.payload = `[Sensor3800-${node.device.id}] Sensor is not yet registered. Waiting for registration event...`;
         node.send(msg);
-      });
-    }
-
-    // const PutRequest = node.device.put('/1/0/3', node.period, (data) => {
+      }
+    });
   }
-  // }
   RED.nodes.registerType('sensor3800 in', SensorNode);
+  SensorNode.prototype.close = function () {
+    // Stop all observations
+  };
 };

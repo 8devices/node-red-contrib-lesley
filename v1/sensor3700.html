@@ -10,7 +10,6 @@
             reactivePower: {value: false},
             reactiveEnergy: {value: false},
             relay: {value: false},
-            topic: {value: ""},
             service: {type: "lesley-service", required: true}
         },
         inputs: 1,
@@ -63,24 +62,40 @@
         <label for="node-input-relay" style="width: auto">Relay</label>
     </div>
     <div class="form-row">
-        <label for="node-input-interval"> Observation time: </label>
+        <label for="node-input-interval" style="width: auto">Observation time</label>
         <input type="text" id="node-input-interval" size="60" style="overflow: scroll; width: 40px"></input>
         <label for="node-input-interval"> seconds</label>
-    </div>
-    <div class="form-row">
-        <label for="node-input-topic">Topic</label>
-        <input type="text" id="node-input-topic">
     </div>
 </script>
 
 <script type="text/x-red" data-help-name="sensor3700 in">
-<p>This node sends requests to read sensors 3700 data. Waits for response and then pulls it out and outpusts information.</p>
-<p>How often requests are sent depends on time which can be set in nodes configuration window.</p>
+<p>This node sends requests to read sensors 3700 data. Waits for response and then pulls it out and outputs information.</p>
+<p>How often measurements are performed depends on time which can be set in nodes configuration window.</p>
+<p>Supported resources:</p>
+<ul>
+    <li>powerSourceVoltage: Power source voltage in milivolts (Integer)</li>
+    <li>activePower: Instantaneous active power in watts (Float)</li>
+    <li>activeEnergy: Cumulative active power in watthours (Float)</li>
+    <li>reactivePower: Instantaneous active power in watts (Float)</li>
+    <li>reactiveEnergy: Cumulative active power in watthours (Float)</li>
+    <li>relay: Relay state (Bool)</li>
+</ul>
 <p>Message structure:</p>
 <ul>
-	<li>msg.topic : Topic</li>
-	<li>msg.measurement : Measurement (Active power, active energy, reactive power, reactive energy, relay)</li>
-	<li>msg.status : Status</li>
-	<li>msg.payload : Payload, value</li>
+    <li>msg.payload : <ul style="list-style-type:none">
+        <li>state: sensor connection state</li>
+        <li>data: <ul style="list-style-type:none">
+            <li>
+                <i>current measurement name and value</i>
+            </li>
+        </ul></li>
+        <li>cache: <ul style="list-style-type:none">
+            <li>
+                <i>cached measurement names and values</i>
+            </li>
+        </ul></li>
+    </ul> 
+    </li>
+    <li>_msgid: asynchronous message ID</li>
 </ul>
 </script>

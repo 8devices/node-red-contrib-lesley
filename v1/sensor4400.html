@@ -8,7 +8,6 @@
             temperature: {value: false},
             magneticField: {value: false},
             magneticCounter: {value: false},
-            topic: {value: ""},
             service: {type: "lesley-service", required: true}
         },
         inputs: 0,
@@ -53,25 +52,38 @@
 		    <label for="node-input-magneticCounter" style="width: auto">Magnetic counter</label>
     </div>
     <div class="form-row">
-        <label for="node-input-interval" style="width: auto"> Observation time: </label>
+        <label for="node-input-interval" style="width: auto">Observation time</label>
         <input type="text" id="node-input-interval" size="60" style="overflow: scroll; width: 40px"></input>
         <label for="node-input-interval"> seconds</label>
-    </div>
-    <div class="form-row">
-        <label for="node-input-topic">Topic</label>
-        <input type="text" id="node-input-topic">
     </div>
 </script>
 
 <script type="text/x-red" data-help-name="sensor4400 in">
-<p>This node sends requests to read sensors 4400 data. Waits for response and then pulls it out and outpusts information.</p>
-<p>How often requests are sent depends on time which can be set in nodes configuration window.</p>
+<p>This node sends requests to read sensors 4400 data. Waits for response and then pulls it out and outputs information.</p>
+<p>How often measurements are performed depends on time which can be set in nodes configuration window.</p>
+<p>Supported resources:</p>
+<ul>
+    <li>powerSourceVoltage: Power source voltage in milivolts (Integer)</li>
+    <li>temperature: Air temperature in degrees centigrade (Float)</li> 
+    <li>magneticField: Hall sensor state (Boolean)</li>
+    <li>magneticField: Hall sensor state changes count (Integer)</li>
+</ul>
 <p>Message structure:</p>
 <ul>
-	<li>msg.topic : Topic</li>
-	<li>msg.measurement : Measurement (Power source voltage, temperature, magnetic field, magnetic counter)</li>
-	<li>msg.status : Status</li>
-	<li>msg.payload : Payload, value</li>
-  <li>msg.async_id : Given asynchronic id</li>
+    <li>msg.payload : <ul style="list-style-type:none">
+        <li>state: sensor connection state</li>
+        <li>data: <ul style="list-style-type:none">
+            <li>
+                <i>current measurement name and value</i>
+            </li>
+        </ul></li>
+        <li>cache: <ul style="list-style-type:none">
+            <li>
+                <i>cached measurement names and values</i>
+            </li>
+        </ul></li>
+    </ul> 
+    </li>
+    <li>_msgid: asynchronous message ID</li>
 </ul>
 </script>

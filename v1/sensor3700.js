@@ -19,7 +19,6 @@ module.exports = function (RED) {
     node.name = config.uuid;
     node.paths = [];
     node.device = new restAPI.Device(node.service.service, node.name);
-    node.powerSourceVoltage = config.powerSourceVoltage;
     node.state = false;
     node.cache = {};
 
