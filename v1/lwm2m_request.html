@@ -7,22 +7,30 @@
         element.style.display = 'block';
    }
 
-   function requestTypeHandler(selectionId, sectionId) {
+   function requestTypeHandler(selectionId, writeSectionId, readWriteSectionId) {
      const selectionElement = document.getElementById(selectionId);
-     const sectionElement = document.getElementById(sectionId);
+     const writeSectionElement = document.getElementById(writeSectionId);
+     const readWriteSectionElement = document.getElementById(readWriteSectionId);
      switch (selectionElement.value) {
        case 'write': {
-         sectionElement.style.display = 'block';
+         readWriteSectionElement.style.display = 'block';
+         writeSectionElement.style.display = 'block';
          break;
        }
 
        case 'read': {
-         sectionElement.style.display = 'none';
+         readWriteSectionElement.style.display = 'block';
+         writeSectionElement.style.display = 'none';
+         break;
+       }
+
+       case 'execute': {
+         readWriteSectionElement.style.display = 'none';
          break;
        }
 
        default: {
-         sectionElement.style.display = 'none';
+         readWriteSectionElement.style.display = 'none';
        }
      }
    }
@@ -84,37 +92,40 @@
     </div>
     <div class="form-row">
         <label for="node-input-requestType">Request type</label>
-        <select id="node-input-requestType" onchange="requestTypeHandler('node-input-requestType', 'writeRequestSection')">
+        <select id="node-input-requestType" onchange="requestTypeHandler('node-input-requestType', 'writeRequestSection', 'readWriteRequestsSection')">
             <option value='read'>Read</option>
             <option value='write'>Write</option>
+            <option value='execute'>Execute</option>
         </select>
     </div>
     <div class="form-row">
         <label for="node-input-uri">Resource path</label>
         <input type="text" id="node-input-uri">
     </div>
-    <div class="form-row">
-        <label for="node-input-resourceType">Resource type:</label>
-        <select id="node-input-resourceType">
-            <option value='integer'>Integer</option>
-            <option value='float'>Float</option>
-            <option value='string'>String</option>
-            <option value='boolean'>Boolean</option>
-            <option value='opaque'>Opaque</option>
-        </select>
-    </div>
-    <div id="writeRequestSection">
-    <div class="form-row">
-        <label for="node-input-valueSource">Value source:</label>
-        <select id="node-input-valueSource" onchange="inputSourceHandler('node-input-valueSource', 'resourceValueRegion')">
-            <option value='textbox'>Textbox</option>
-            <option value='input'>Input</option>
-        </select>
-    </div>
-    <div class="form-row" id="resourceValueRegion">
-        <label for="node-input-resourceValue">Resource value</label>
-        <input id="node-input-resourceValue">
-    </div>
+    <div id='readWriteRequestsSection'>
+        <div class="form-row">
+            <label for="node-input-resourceType">Resource type:</label>
+            <select id="node-input-resourceType">
+                <option value='integer'>Integer</option>
+                <option value='float'>Float</option>
+                <option value='string'>String</option>
+                <option value='boolean'>Boolean</option>
+                <option value='opaque'>Opaque</option>
+            </select>
+        </div>
+        <div id="writeRequestSection">
+            <div class="form-row">
+                <label for="node-input-valueSource">Value source:</label>
+                <select id="node-input-valueSource" onchange="inputSourceHandler('node-input-valueSource', 'resourceValueRegion')">
+                    <option value='textbox'>Textbox</option>
+                    <option value='input'>Input</option>
+                </select>
+            </div>
+            <div class="form-row" id="resourceValueRegion">
+                <label for="node-input-resourceValue">Resource value</label>
+                <input id="node-input-resourceValue">
+            </div>
+        </div>
     </div>
 </script>
 
