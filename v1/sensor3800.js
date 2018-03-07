@@ -93,15 +93,14 @@ module.exports = function (RED) {
       node.send(msg);
       configure();
     }).catch((err) => {
-      const msg = {};
       if (err === 404) {
         const msg = {};
-		msg.payload = {};
-		node.state = false;
-		msg.payload.state = node.state;
-		msg.payload.data = {};
-		msg.payload.cache = node.cache;
-		node.send(msg);
+        msg.payload = {};
+        node.state = false;
+        msg.payload.state = node.state;
+        msg.payload.data = {};
+        msg.payload.cache = node.cache;
+        node.send(msg);
       }
     });
   }
