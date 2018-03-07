@@ -161,12 +161,15 @@ module.exports = function (RED) {
     }
 
     node.on('input', (msg) => {
-      node.device.getObjects().then((data) => {
-        node.send(data);
-      }).catch((err) => {
-        msg.error = err;
-        node.send(msg);
-      });
+      let relayState;
+      if (msg.payload) {
+        relayState = true;
+      } else {
+        relayState = false;
+      }
+
+      node.device.write('/3312/0/5850', () => {
+      }, encodeResourceTLV(5850, relayState, RESOURCE_TYPE.BOOLEAN));
     });
 
     node.device.on('register', () => {
