@@ -123,6 +123,26 @@ module.exports = function (RED) {
         break;
       }
 
+      case 'execute': {
+        node.on('input', () => {
+          node.device.execute(node.resourcePath, (statusCode) => {
+            const msg = {};
+            msg.payload = {};
+            msg.payload.code = {};
+            msg.payload.code[node.resourcePath] = statusCode;
+            node.send(msg);
+          }).then((data) => {
+            node.send(data);
+          }).catch((err) => {
+            const msg = {};
+            msg.error = err;
+            node.send(msg);
+          });
+        });
+
+        break;
+      }
+
       default:
         this.error({ payload: 'Unknown LwM2M request type.' });
     }
