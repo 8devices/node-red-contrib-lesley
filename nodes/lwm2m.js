@@ -104,8 +104,21 @@ class LwM2MInstance {
     return this.identifier;
   }
 
-  getValue() {
-    return this.value;
+  getValue(resourceType) {
+    switch (resourceType) {
+      case RESOURCE_TYPE.INTEGER:
+        return this.getIntegerValue();
+      case RESOURCE_TYPE.FLOAT:
+        return this.getFloatValue();
+      case RESOURCE_TYPE.STRING:
+        return this.getStringValue();
+      case RESOURCE_TYPE.BOOLEAN:
+        return this.getBooleanValue();
+      case RESOURCE_TYPE.OPAQUE:
+        return this.getBinaryValue();
+      default:
+        return this.value;
+    }
   }
 
   getResource(resourceId) {
