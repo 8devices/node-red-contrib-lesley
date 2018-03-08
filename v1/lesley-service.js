@@ -11,10 +11,6 @@ module.exports = function (RED) {
     service.options.name = config.name;
     service.options.url = config.url;
     service.service = new restAPI.Service({ host: service.options.url });
-
-    service.service.on('server-error', (err) => {
-      service.error(err);
-    });
   }
   RED.nodes.registerType('lesley-service', LesleyService);
 };

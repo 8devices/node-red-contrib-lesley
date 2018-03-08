@@ -32,16 +32,14 @@ module.exports = function (RED) {
           state: node.state,
           data: {},
         };
-
         msg.payload.data[resourceName] = resourceValue;
         node.cache[resourceName] = resourceValue;
         msg.payload.cache = node.cache;
         node.send(msg);
-      }).then(() => {
       }).catch((err) => {
         const msg = {};
-        msg.error = err;
-        node.send(msg);
+        msg.payload = err;
+        node.error(msg);
       });
     }
 
@@ -81,7 +79,6 @@ module.exports = function (RED) {
       } else {
         relayState = false;
       }
-
       node.device.write('/3312/0/5850', () => {
       }, encodeResourceTLV(5850, relayState, RESOURCE_TYPE.BOOLEAN));
     });
@@ -113,20 +110,24 @@ module.exports = function (RED) {
 
     node.device.getObjects().then(() => {
       const msg = {};
-      msg.payload = `[Sensor3700-${node.device.id}] Sensor is already registered`;
-      node.send(msg);
+      msg.payload = {};
       node.state = true;
+      msg.payload.state = node.state;
+      msg.payload.data = {};
+      msg.payload.cache = node.cache;
+      node.send(msg);
       configure();
     }).catch((err) => {
-      const msg = {};
       if (err === 404) {
-        msg.payload = `[Sensor3700-${node.device.id}] Sensor is not yet registered. Waiting for registration event...`;
+        const msg = {};
+        msg.payload = {};
+        node.state = false;
+        msg.payload.state = node.state;
+        msg.payload.data = {};
+        msg.payload.cache = node.cache;
         node.send(msg);
       }
     });
   }
   RED.nodes.registerType('sensor3700 in', SensorNode);
-  SensorNode.prototype.close = function () {
-    // Stop all observations
-  };
 };
