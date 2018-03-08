@@ -96,6 +96,10 @@ module.exports = function (RED) {
         msg.payload.data = {};
         msg.payload.cache = node.cache;
         node.send(msg);
+      } else {
+        const msg = {};
+        msg.payload = err;
+        node.error(msg);
       }
     });
   }
