@@ -52,7 +52,7 @@ module.exports = function (RED) {
       }
 
       if (node.activePower) {
-        observe('/3305/0/5800', 'activePower', RESOURCE_TYPE.FLOAT);
+        observe('/3305/0/5800', 'activePower', RESOURCE_TYPE.INTEGER);
       }
 
       if (node.activeEnergy) {
@@ -60,11 +60,11 @@ module.exports = function (RED) {
       }
 
       if (node.reactivePower) {
-        observe('/3305/0/5815', 'reactivePower', RESOURCE_TYPE.FLOAT);
+        observe('/3305/0/5810', 'reactivePower', RESOURCE_TYPE.INTEGER);
       }
 
       if (node.reactiveEnergy) {
-        observe('/3305/0/5810', 'reactiveEnergy', RESOURCE_TYPE.FLOAT);
+        observe('/3305/0/5815', 'reactiveEnergy', RESOURCE_TYPE.FLOAT);
       }
 
       if (node.relay) {
