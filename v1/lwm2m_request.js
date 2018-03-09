@@ -70,11 +70,11 @@ module.exports = function (RED) {
               msg.payload.code[node.resourcePath] = statusCode;
               node.send(msg);
             }, tlvBuffer)
-            .catch((err) => {
-              const msg = {};
-              msg.error = err;
-              node.send(msg);
-            });
+              .catch((err) => {
+                const msg = {};
+                msg.error = err;
+                node.send(msg);
+              });
           }
         });
 
