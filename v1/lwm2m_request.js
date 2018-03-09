@@ -38,7 +38,7 @@ module.exports = function (RED) {
           }
 
           if (node.resourcePath.split('/').length === 4) {
-            const resourceIdentifier = node.resourcePath.split('/')[3];
+            const resourceIdentifier = Number(node.resourcePath.split('/')[3]);
             let tlvBuffer;
             switch (node.resourceType) {
               case 'integer':
@@ -63,20 +63,18 @@ module.exports = function (RED) {
               default:
                 return;
             }
-
             node.device.write(node.resourcePath, (statusCode) => {
               const msg = {};
               msg.payload = {};
               msg.payload.code = {};
               msg.payload.code[node.resourcePath] = statusCode;
               node.send(msg);
-            }, tlvBuffer).then((data) => {
-              node.send(data);
-            }).catch((err) => {
-              const msg = {};
-              msg.error = err;
-              node.send(msg);
-            });
+            }, tlvBuffer)
+              .catch((err) => {
+                const msg = {};
+                msg.error = err;
+                node.send(msg);
+              });
           }
         });
 
@@ -111,8 +109,6 @@ module.exports = function (RED) {
                 msg.payload.data[node.resourcePath] = objectsList[0].getStringValue();
             }
             node.send(msg);
-          }).then((data) => {
-            node.send(data);
           }).catch((err) => {
             const msg = {};
             msg.error = err;
@@ -131,8 +127,6 @@ module.exports = function (RED) {
             msg.payload.code = {};
             msg.payload.code[node.resourcePath] = statusCode;
             node.send(msg);
-          }).then((data) => {
-            node.send(data);
           }).catch((err) => {
             const msg = {};
             msg.error = err;

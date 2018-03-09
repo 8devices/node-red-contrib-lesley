@@ -70,7 +70,7 @@
         },
         inputs: 1,
         outputs: 1,
-        color: "rgb(204, 204, 0)",
+        color: "rgb(255, 111, 0)",
         label: function () {
 			return "LwM2M request";
         },
@@ -130,9 +130,30 @@
 </script>
 
 <script type="text/x-red" data-help-name="LwM2M request in">
-<p>This node sends resource write requests when it receives input.</p>
-<p>Message structure:</p>
+<p>This node is a tool that performs LWM2M requests such as read, write, execute. Endpoint name, resource path and request type are chosen in node configuration menu.</p>
+<p>If "read" is chosen variable type can also be choisen in which data will be represented.</p>
+<p>Write request choise also adds input value type choise.</p>
+<p>Input triggers the node to perform requests. It's value is equal to write request argument when performing write requests. For read and execute requests input message should not be empty or value should not be represented as "false".</p>
+<p>Read output message structure:</p>
 <ul>
-	<li>msg.payload : Payload, value</li>
+    <li>msg.payload : <ul style="list-style-type:none">
+        <li>data: <ul style="list-style-type:none">
+            <li>
+                <i>Value which was read</i>
+            </li>
+        </ul></li>
+    </ul>
+    </li>
+</ul>
+<p>Write and execute output message structure:</p>
+<ul>
+    <li>msg.payload : <ul style="list-style-type:none">
+        <li>code: <ul style="list-style-type:none">
+            <li>
+                <i>Response status code</i>
+            </li>
+        </ul></li>
+    </ul>
+    </li>
 </ul>
 </script>
