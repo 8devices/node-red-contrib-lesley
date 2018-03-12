@@ -52,7 +52,7 @@ module.exports = function (RED) {
       }
 
       if (node.activePower) {
-        observe('/3305/0/5800', 'activePower', RESOURCE_TYPE.INTEGER);
+        observe('/3305/0/5800', 'activePower', RESOURCE_TYPE.FLOAT);
       }
 
       if (node.activeEnergy) {
@@ -60,7 +60,7 @@ module.exports = function (RED) {
       }
 
       if (node.reactivePower) {
-        observe('/3305/0/5810', 'reactivePower', RESOURCE_TYPE.INTEGER);
+        observe('/3305/0/5810', 'reactivePower', RESOURCE_TYPE.FLOAT);
       }
 
       if (node.reactiveEnergy) {
