@@ -9,10 +9,11 @@ module.exports = function (RED) {
     this.options.name = config.name;
     this.options.url = config.url;
     this.service = new restAPI.Service({ host: this.options.url });
+    this.service.start();
   }
   RED.nodes.registerType('lesley-service', LesleyService);
 
   LesleyService.prototype.close = function () {
-    clearInterval(this.service.pollTimer);
+    this.service.stop();
   };
 };
