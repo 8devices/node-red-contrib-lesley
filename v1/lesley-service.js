@@ -14,6 +14,6 @@ module.exports = function (RED) {
   RED.nodes.registerType('lesley-service', LesleyService);
 
   LesleyService.prototype.close = function () {
-    clearInterval(this.service.stop());
+    this.service.stop();
   };
 };
