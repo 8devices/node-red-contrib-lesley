@@ -1,0 +1,32 @@
+<script type="text/javascript">
+    RED.nodes.registerType("lesley-service", {
+        category: "config",
+        defaults: {
+            name: {value:"lesley-service", required:true},
+            url: {value:"http://localhost:8888", required:true}
+        },
+        inputs: 0,
+        outputs: 0,
+        color: "rgb(75, 190, 255)",
+        label: function () {
+            return this.name;
+        },
+    });
+</script>
+
+<script type="text/x-red" data-template-name="lesley-service">
+    <div class="form-row">
+        <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-config-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-url"> URL</label>
+        <input type="text" id="node-config-input-url" placeholder="Name">
+    </div>
+</script>
+
+
+<script type="text/x-red" data-help-name="lesley-service">
+</script>
+
+

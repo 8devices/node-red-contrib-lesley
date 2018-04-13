@@ -1,0 +1,88 @@
+<script type="text/javascript">
+    RED.nodes.registerType("sensor4400 in", {
+        category: "input",
+        defaults: {
+            uuid: {value: "", required: true},
+            interval: {value: 60},
+            powerSourceVoltage: {value: false},
+            temperature: {value: false},
+            magneticField: {value: false},
+            magneticCounter: {value: false},
+            service: {type: "lesley-service", required: true}
+        },
+        inputs: 0,
+        outputs: 1,
+        color: "rgb(204, 204, 0)",
+        label: function () {
+			return "sensor4400";
+        },
+        labelStyle: function() {
+            return this.name?"node_label_italic":"";
+        },
+        icon: "bridge.png",
+    });
+</script>
+
+<script type="text/x-red" data-template-name="sensor4400 in">
+    <div class="form-row">
+        <label for="node-input-uuid"> UUID</label>
+        <input type="text" id="node-input-uuid" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+    </div>
+    <div class="form-row">
+        <label for="node-input-service"> Service</label>
+        <input type="text" id="node-input-service">
+    </div>
+    <div class="form-row">
+        <label for="node-input-measurement"> Measurements:</label>
+    </div>
+    <div class="form-row">
+		    <input type="checkbox" id="node-input-powerSourceVoltage" style="width: auto" checked>
+		    <label for="node-input-powerSourceVoltage" style="width: auto">Power source voltage</label>
+    </div>
+    <div class="form-row">
+		    <input type="checkbox" id="node-input-temperature" style="width: auto" checked>
+		    <label for="node-input-temperature" style="width: auto">Temperature</label>
+    </div>
+    <div class="form-row">
+		    <input type="checkbox" id="node-input-magneticField" style="width: auto" checked>
+		    <label for="node-input-magneticField" style="width: auto">Magnetic field</label>
+    </div>
+    <div class="form-row">
+		    <input type="checkbox" id="node-input-magneticCounter" style="width: auto" checked>
+		    <label for="node-input-magneticCounter" style="width: auto">Magnetic counter</label>
+    </div>
+    <div class="form-row">
+        <label for="node-input-interval" style="width: auto">Observation time</label>
+        <input type="text" id="node-input-interval" size="60" style="overflow: scroll; width: 40px"></input>
+        <label for="node-input-interval"> seconds</label>
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="sensor4400 in">
+<p>This node sends requests to observe sensor's 4400 selected data. Outputs information when observe response is recieved.</p>
+<p>How often observation response data is recieved depends on observation time (seconds) which can be set in node's configuration window.</p>
+<p>Supported resources:</p>
+<ul>
+    <li>powerSourceVoltage: Power source voltage in milivolts (Integer)</li>
+    <li>temperature: Air temperature in degrees centigrade (Float)</li> 
+    <li>magneticField: Hall sensor state (Boolean)</li>
+    <li>magneticField: Hall sensor state changes count (Integer)</li>
+</ul>
+<p>Message structure:</p>
+<ul>
+    <li>msg.payload : <ul style="list-style-type:none">
+        <li>state: sensor connection state</li>
+        <li>data: <ul style="list-style-type:none">
+            <li>
+                <i>current measurement name and value</i>
+            </li>
+        </ul></li>
+        <li>cache: <ul style="list-style-type:none">
+            <li>
+                <i>cached measurement names and values</i>
+            </li>
+        </ul></li>
+    </ul> 
+    </li>
+</ul>
+</script>
