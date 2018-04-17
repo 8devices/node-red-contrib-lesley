@@ -1,6 +1,8 @@
 'use strict';
 
-const { INSTANCE_TYPE, decodeTLV } = require('./lwm2m.js');
+const { Lwm2m } = require('restserver-api');
+
+const { RESOURCE_TYPE, decodeResource } = Lwm2m.TLV;
 
 module.exports = function (RED) {
   function SensorNode(config) {
@@ -13,17 +15,21 @@ module.exports = function (RED) {
     if (node.service != null) {
       node.interval_id = setInterval(() => {
         let path = '';
+        let type;
         if (config.measurement === 'Temperature' || config.measurement === 'temperature') {
           path = '/3303/0/5700';
+          type = RESOURCE_TYPE.FLOAT;
         }
         if (config.measurement === 'Magnetic field' || config.measurement === 'magnetic field') {
           path = '/3200/0/5500';
+          type = RESOURCE_TYPE.BOOLEAN;
         }
         if (config.measurement === 'Magnetic counter' || config.measurement === 'magnetic counter') {
           path = '/3200/0/5501';
-        }
-        if (config.measurement === 'Power source voltage' || config.measurement === 'power source voltage') {
+          type = RESOURCE_TYPE.INTEGER;
+        } else if (config.measurement === 'Power source voltage' || config.measurement === 'power source voltage') {
           path = '/3/0/7';
+          type = RESOURCE_TYPE.INTEGER;
         }
         node.service.get_transaction(`${url}endpoints/${name}${path}`, (resp) => {
           const msg = {};
@@ -33,21 +39,10 @@ module.exports = function (RED) {
           if (Object.prototype.hasOwnProperty.call(resp, 'payload')) {
             if (resp.payload !== '') {
               const buf = Buffer.from(resp.payload, 'base64');
-              const objectsList = decodeTLV(buf, node);
-              if ((objectsList.length === 1)
-                  && (objectsList[0].getType() === INSTANCE_TYPE.RESOURCE)) {
-                switch (path) {
-                  case '/3/0/7':
-                  case '/3200/0/5501':
-                    msg.payload = objectsList[0].getIntegerValue();
-                    break;
-                  case '/3200/0/5500':
-                    msg.payload = objectsList[0].getBooleanValue();
-                    break;
-                  default:
-                    msg.payload = objectsList[0].getFloatValue();
-                }
-              }
+              msg.payload = decodeResource(buf, {
+                identifier: Number(path.split('/')[3]),
+                type,
+              }).value;
             }
           }
           node.send(msg);

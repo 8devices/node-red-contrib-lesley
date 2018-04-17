@@ -1,6 +1,8 @@
 'use strict';
 
-const { INSTANCE_TYPE, decodeTLV } = require('./lwm2m.js');
+const { Lwm2m } = require('restserver-api');
+
+const { RESOURCE_TYPE, decodeResource } = Lwm2m.TLV;
 
 module.exports = function (RED) {
   function SensorNode(config) {
@@ -13,11 +15,13 @@ module.exports = function (RED) {
     if (node.service != null) {
       node.interval_id = setInterval(() => {
         let path = '';
+        let type;
         if (config.measurement === 'Voltage' || config.measurement === 'voltage') {
           path = '/3202/0/5600';
-        }
-        if (config.measurement === 'Power source voltage' || config.measurement === 'power source voltage') {
+          type = RESOURCE_TYPE.FLOAT;
+        } else if (config.measurement === 'Power source voltage' || config.measurement === 'power source voltage') {
           path = '/3/0/7';
+          type = RESOURCE_TYPE.INTEGER;
         }
         node.service.get_transaction(`${url}endpoints/${name}${path}`, (resp) => {
           const msg = {};
@@ -27,17 +31,10 @@ module.exports = function (RED) {
           if (Object.prototype.hasOwnProperty.call(resp, 'payload')) {
             if (resp.payload !== '') {
               const buf = Buffer.from(resp.payload, 'base64');
-              const objectsList = decodeTLV(buf, node);
-              if ((objectsList.length === 1)
-                  && (objectsList[0].getType() === INSTANCE_TYPE.RESOURCE)) {
-                switch (path) {
-                  case '/3/0/7':
-                    msg.payload = objectsList[0].getIntegerValue();
-                    break;
-                  default:
-                    msg.payload = objectsList[0].getFloatValue();
-                }
-              }
+              msg.payload = decodeResource(buf, {
+                identifier: Number(path.split('/')[3]),
+                type,
+              }).value;
             }
           }
           node.send(msg);
