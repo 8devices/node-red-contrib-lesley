@@ -1,7 +1,9 @@
 'use strict';
 
 const restAPI = require('restserver-api');
-const { RESOURCE_TYPE, encodeResourceTLV, decodeTLV } = require('../nodes/lwm2m.js');
+
+const { Lwm2m } = restAPI;
+const { RESOURCE_TYPE, encodeResource, decodeResource } = Lwm2m.TLV;
 
 module.exports = function (RED) {
   function SensorNode(config) {
@@ -13,23 +15,24 @@ module.exports = function (RED) {
     node.requestType = config.requestType;
     node.resourcePath = config.uri;
     node.resourceType = config.resourceType;
-    node.resourceValue = config.resourceValue;
+    node.inputValue = config.resourceValue;
     node.valueSource = config.valueSource;
 
     node.device = new restAPI.Device(node.service.service, node.name);
 
+    let resourceType;
     switch (node.requestType) {
       case 'write': {
         node.on('input', (input) => {
-          let value;
+          let resourceValue;
           switch (node.valueSource) {
             case 'textbox': {
-              value = node.resourceValue;
+              resourceValue = node.inputValue;
               break;
             }
 
             case 'input': {
-              value = input.payload;
+              resourceValue = input.payload;
               break;
             }
 
@@ -39,30 +42,42 @@ module.exports = function (RED) {
 
           if (node.resourcePath.split('/').length === 4) {
             const resourceIdentifier = Number(node.resourcePath.split('/')[3]);
-            let tlvBuffer;
+
             switch (node.resourceType) {
               case 'integer':
-                value = Number(value);
-                tlvBuffer = encodeResourceTLV(resourceIdentifier, value, RESOURCE_TYPE.INTEGER);
+              case 'float': {
+                resourceValue = Number(resourceValue);
+                resourceType = RESOURCE_TYPE[node.resourceType.toUpperCase()];
+
                 break;
-              case 'float':
-                value = Number(value);
-                tlvBuffer = encodeResourceTLV(resourceIdentifier, value, RESOURCE_TYPE.FLOAT);
+              }
+              case 'string': {
+                resourceType = RESOURCE_TYPE[node.resourceType.toUpperCase()];
+
                 break;
-              case 'string':
-                tlvBuffer = encodeResourceTLV(resourceIdentifier, value, RESOURCE_TYPE.STRING);
+              }
+              case 'boolean': {
+                resourceValue = Boolean(resourceValue);
+                resourceType = RESOURCE_TYPE[node.resourceType.toUpperCase()];
+
                 break;
-              case 'boolean':
-                value = Boolean(value);
-                tlvBuffer = encodeResourceTLV(resourceIdentifier, value, RESOURCE_TYPE.BOOLEAN);
+              }
+              case 'opaque': {
+                resourceValue = Buffer.from(resourceValue);
+                resourceType = RESOURCE_TYPE[node.resourceType.toUpperCase()];
+
                 break;
-              case 'opaque':
-                value = Buffer.from(value);
-                tlvBuffer = encodeResourceTLV(resourceIdentifier, value, RESOURCE_TYPE.OPAQUE);
-                break;
+              }
               default:
                 return;
             }
+
+            const tlvBuffer = encodeResource({
+              type: resourceType,
+              identifier: resourceIdentifier,
+              value: resourceValue,
+            });
+
             node.device.write(node.resourcePath, (statusCode) => {
               const msg = {};
               msg.payload = {};
@@ -75,6 +90,10 @@ module.exports = function (RED) {
                 msg.error = err;
                 node.send(msg);
               });
+          } else {
+            node.error({
+              payload: 'Invalid path to resource. Must be "/object/instance/resource", e.g., "/1/0/3".',
+            });
           }
         });
 
@@ -83,37 +102,45 @@ module.exports = function (RED) {
 
       case 'read': {
         node.on('input', () => {
-          node.device.read(node.resourcePath, (statusCode, payload) => {
-            const msg = {};
-            msg.payload = {};
-            msg.payload.data = {};
-            const buffer = Buffer.from(payload, 'base64');
-            const objectsList = decodeTLV(buffer, node);
-            switch (node.resourceType) {
-              case 'integer':
-                msg.payload.data[node.resourcePath] = objectsList[0].getIntegerValue();
-                break;
-              case 'float':
-                msg.payload.data[node.resourcePath] = objectsList[0].getFloatValue();
-                break;
-              case 'string':
-                msg.payload.data[node.resourcePath] = objectsList[0].getStringValue();
-                break;
-              case 'boolean':
-                msg.payload.data[node.resourcePath] = objectsList[0].getBooleanValue();
-                break;
-              case 'opaque':
-                msg.payload.data[node.resourcePath] = objectsList[0].getBinaryValue();
-                break;
-              default:
-                msg.payload.data[node.resourcePath] = objectsList[0].getStringValue();
-            }
-            node.send(msg);
-          }).catch((err) => {
-            const msg = {};
-            msg.error = err;
-            node.send(msg);
-          });
+          if (node.resourcePath.split('/').length === 4) {
+            const resourceIdentifier = Number(node.resourcePath.split('/')[3]);
+
+            node.device.read(node.resourcePath, (statusCode, payload) => {
+              const buffer = Buffer.from(payload, 'base64');
+              const msg = {};
+              msg.payload = {};
+              msg.payload.data = {};
+
+              switch (node.resourceType) {
+                case 'integer':
+                case 'float':
+                case 'string':
+                case 'boolean':
+                case 'opaque':
+                  resourceType = RESOURCE_TYPE[node.resourceType.toUpperCase()];
+                  break;
+                default:
+                  resourceType = RESOURCE_TYPE.STRING;
+              }
+
+              const decodedResource = decodeResource(buffer, {
+                type: resourceType,
+                identifier: resourceIdentifier,
+              });
+
+              msg.payload.data[node.resourcePath] = decodedResource.value;
+
+              node.send(msg);
+            }).catch((err) => {
+              const msg = {};
+              msg.error = err;
+              node.send(msg);
+            });
+          } else {
+            node.error({
+              payload: 'Invalid path to resource. Must be "/object/instance/resource", e.g., "/1/0/3".',
+            });
+          }
         });
 
         break;

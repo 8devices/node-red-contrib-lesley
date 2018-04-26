@@ -1,7 +1,9 @@
 'use strict';
 
 const restAPI = require('restserver-api');
-const { RESOURCE_TYPE, encodeResourceTLV, decodeTLV } = require('../nodes/lwm2m.js');
+
+const { Lwm2m } = restAPI;
+const { RESOURCE_TYPE, encodeResource, decodeResource } = Lwm2m.TLV;
 
 module.exports = function (RED) {
   function SensorNode(config) {
@@ -26,8 +28,12 @@ module.exports = function (RED) {
       node.device.observe(resourcePath, (err, response) => {
         const msg = {};
         const buffer = Buffer.from(response, 'base64');
-        const objectsList = decodeTLV(buffer, node);
-        const resourceValue = objectsList[0].getValue(resourceType);
+
+        const decodedResource = decodeResource(buffer, {
+          identifier: Number(resourcePath.split('/')[3]),
+          type: resourceType,
+        });
+        const resourceValue = decodedResource.value;
         msg.payload = {
           state: node.state,
           data: {},
@@ -36,6 +42,7 @@ module.exports = function (RED) {
         node.cache[resourceName] = resourceValue;
         msg.payload.cache = node.cache;
         node.send(msg);
+      }).then(() => {
       }).catch((err) => {
         const msg = {};
         msg.payload = err;
@@ -45,7 +52,11 @@ module.exports = function (RED) {
 
     function configure() {
       node.device.write('/1/0/3', () => {
-      }, encodeResourceTLV(3, node.observationInterval, RESOURCE_TYPE.INTEGER));
+      }, encodeResource({
+        identifier: 3,
+        type: RESOURCE_TYPE.INTEGER,
+        value: node.observationInterval,
+      }));
 
       if (node.powerSourceVoltage) {
         observe('/3/0/7', 'powerSourceVoltage', RESOURCE_TYPE.INTEGER);
@@ -80,7 +91,11 @@ module.exports = function (RED) {
         relayState = false;
       }
       node.device.write('/3312/0/5850', () => {
-      }, encodeResourceTLV(5850, relayState, RESOURCE_TYPE.BOOLEAN));
+      }, encodeResource({
+        identifier: 5850,
+        type: RESOURCE_TYPE.BOOLEAN,
+        value: relayState,
+      }));
     });
 
     node.device.on('register', () => {
