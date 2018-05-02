@@ -86,14 +86,14 @@ module.exports = function (RED) {
               node.send(msg);
             }, tlvBuffer)
               .catch((err) => {
-                const msg = {};
-                msg.error = err;
-                node.send(msg);
+                if (typeof err === 'number') {
+                  node.error(`Error code: ${err}`);
+                } else {
+                  node.error(err);
+                }
               });
           } else {
-            node.error({
-              payload: 'Invalid path to resource. Must be "/object/instance/resource", e.g., "/1/0/3".',
-            });
+            node.error('Invalid path to resource. Must be "/object/instance/resource", e.g., "/1/0/3".');
           }
         });
 
@@ -132,14 +132,14 @@ module.exports = function (RED) {
 
               node.send(msg);
             }).catch((err) => {
-              const msg = {};
-              msg.error = err;
-              node.send(msg);
+              if (typeof err === 'number') {
+                node.error(`Error code: ${err}`);
+              } else {
+                node.error(err);
+              }
             });
           } else {
-            node.error({
-              payload: 'Invalid path to resource. Must be "/object/instance/resource", e.g., "/1/0/3".',
-            });
+            node.error('Invalid path to resource. Must be "/object/instance/resource", e.g., "/1/0/3".');
           }
         });
 
@@ -155,9 +155,11 @@ module.exports = function (RED) {
             msg.payload.code[node.resourcePath] = statusCode;
             node.send(msg);
           }).catch((err) => {
-            const msg = {};
-            msg.error = err;
-            node.send(msg);
+            if (typeof err === 'number') {
+              node.error(`Error code: ${err}`);
+            } else {
+              node.error(err);
+            }
           });
         });
 
@@ -165,7 +167,7 @@ module.exports = function (RED) {
       }
 
       default:
-        this.error({ payload: 'Unknown LwM2M request type.' });
+        node.error('Unknown LwM2M request type.');
     }
   }
   RED.nodes.registerType('LwM2M request in', SensorNode);
