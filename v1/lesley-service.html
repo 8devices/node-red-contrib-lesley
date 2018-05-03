@@ -3,7 +3,9 @@
         category: "config",
         defaults: {
             name: {value:"lesley-service", required:true},
-            url: {value:"http://localhost:8888", required:true}
+            url: {value:"http://localhost:8888", required:true},
+            notificationMethod: {required:true},
+            methodValue: {value:5728, required:true}
         },
         inputs: 0,
         outputs: 0,
@@ -21,8 +23,19 @@
     </div>
     <div class="form-row">
         <label for="node-config-input-url"> URL</label>
-        <input type="text" id="node-config-input-url" placeholder="Name">
+        <input type="text" id="node-config-input-url">
     </div>
+    <div class="form-row">
+        <label for="node-config-input-notificationMethod">Notification reciefing method</label>
+        <select id="node-config-input-notificationMethod">
+			<option value="callback">Register a callback</option>
+            <option value="polling">Pulling</option>
+        </select>
+    </div>
+		<div class="form-row">
+			<label for="node-config-input-methodValue">Port / Interval</label>
+			<input type="text" id="node-config-input-methodValue">
+		</div>
 </script>
 
 

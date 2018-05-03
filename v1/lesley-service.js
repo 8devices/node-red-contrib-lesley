@@ -8,6 +8,8 @@ module.exports = function (RED) {
     this.options = {};
     this.options.name = config.name;
     this.options.url = config.url;
+    this.options.notificationMethod = config.notificationMethod;
+    this.options.methodValue = config.methodValue;
     this.service = new restAPI.Service({ host: this.options.url });
     this.service.start();
   }
