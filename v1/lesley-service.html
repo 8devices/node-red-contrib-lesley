@@ -1,10 +1,35 @@
 <script type="text/javascript">
+
+   function methodHandler(selectionId, methodValueId) {
+     const selectionElement = document.getElementById(selectionId);
+     var methodValueLabel = document.getElementById(methodValueId).labels[0];
+     
+     switch (selectionElement.value) {
+       case 'polling': {
+         methodValueLabel.innerHTML = 'Interval (ms)';
+         break;
+       }
+
+       case 'callback': {
+         methodValueLabel.innerHTML = 'Port';
+         break;
+       }
+
+       default: {
+		 methodValueLabel.innerHTML = 'Port';
+       }
+     }
+   }
+
+</script>
+
+<script type="text/javascript">
     RED.nodes.registerType("lesley-service", {
         category: "config",
         defaults: {
             name: {value:"lesley-service", required:true},
             url: {value:"http://localhost:8888", required:true},
-            notificationMethod: {required:true},
+            notificationMethod: {value:'callback', required:true},
             methodValue: {value:5728, required:true}
         },
         inputs: 0,
@@ -26,16 +51,16 @@
         <input type="text" id="node-config-input-url">
     </div>
     <div class="form-row">
-        <label for="node-config-input-notificationMethod">Notification reciefing method</label>
-        <select id="node-config-input-notificationMethod">
-			<option value="callback">Register a callback</option>
-            <option value="polling">Pulling</option>
+        <label for="node-config-input-notificationMethod">Notification receiving method</label>
+        <select id="node-config-input-notificationMethod" onchange="methodHandler('node-config-input-method', 'node-config-input-methodValue')">
+			<option value='callback'>Register a callback</option>
+            <option value='polling'>Pulling</option>
         </select>
     </div>
-		<div class="form-row">
-			<label for="node-config-input-methodValue">Port / Interval</label>
-			<input type="text" id="node-config-input-methodValue">
-		</div>
+	<div class="form-row">
+		<label for="node-config-input-methodValue">Port</label>
+		<input type="text" id="node-config-input-methodValue">
+	</div>
 </script>
 
 
