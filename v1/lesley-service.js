@@ -20,7 +20,7 @@ module.exports = function (RED) {
       this.service = new restAPI.Service({
         host: this.options.url,
         polling: true,
-        interval: this.options.methodValue,
+        interval: this.options.methodValue * 1000,
       });
     }
     this.service.start();

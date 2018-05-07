@@ -2,21 +2,19 @@
 
    function methodHandler(selectionId, methodValueId) {
      const selectionElement = document.getElementById(selectionId);
-     var methodValueLabel = document.getElementById(methodValueId).labels[0];
+     var methodValue = document.getElementById(methodValueId);
      
      switch (selectionElement.value) {
        case 'polling': {
-         methodValueLabel.innerHTML = 'Interval (ms)';
+         methodValue.labels[0].innerHTML = 'Interval (s)';
+         methodValue.value = 1;
          break;
        }
 
        case 'callback': {
-         methodValueLabel.innerHTML = 'Port';
+         methodValue.labels[0].innerHTML = 'Port';
+         methodValue.value = 5728;
          break;
-       }
-
-       default: {
-		 methodValueLabel.innerHTML = 'Port';
        }
      }
    }
@@ -52,7 +50,7 @@
     </div>
     <div class="form-row">
         <label for="node-config-input-notificationMethod">Notification receiving method</label>
-        <select id="node-config-input-notificationMethod" onchange="methodHandler('node-config-input-method', 'node-config-input-methodValue')">
+        <select id="node-config-input-notificationMethod" onchange="methodHandler('node-config-input-notificationMethod', 'node-config-input-methodValue')">
 			<option value='callback'>Register a callback</option>
             <option value='polling'>Pulling</option>
         </select>
