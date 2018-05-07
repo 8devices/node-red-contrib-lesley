@@ -60,19 +60,24 @@
     RED.nodes.registerType("LwM2M request in", {
         category: "input",
         defaults: {
-            uuid: {value: "", required: true},
-            service: {type: "lesley-service", required: true},
-            uri: {value: "", required: true},
-            requestType: {value: "read", required: true},
-            resourceType: {value: "integer", required: true},
-            valueSource: {value: "input", required: true},
-            resourceValue: {value: ""}
+			uuid: {value: "", required: true},
+			service: {type: "lesley-service", required: true},
+			uri: {value: "", required: true},
+			requestType: {value: "read", required: true},
+			resourceType: {value: "integer", required: true},
+			valueSource: {value: "input", required: true},
+			resourceValue: {value: ""},
+			name: {value:""},
         },
         inputs: 1,
         outputs: 1,
         color: "rgb(255, 111, 0)",
         label: function () {
-			return "LwM2M request";
+			if (this.name) {
+			  return this.name;
+			} else {
+			  return "LwM2M request";
+			}
         },
         labelStyle: function() {
             return this.name?"node_label_italic":"";
@@ -126,6 +131,10 @@
                 <input id="node-input-resourceValue">
             </div>
         </div>
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
     </div>
 </script>
 
