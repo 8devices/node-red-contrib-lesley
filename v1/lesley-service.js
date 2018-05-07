@@ -11,18 +11,16 @@ module.exports = function (RED) {
     this.options.notificationMethod = config.notificationMethod;
     this.options.methodValue = config.methodValue;
     if (this.options.notificationMethod === 'callback') {
-      this.service = new restAPI.Service({
-        host: this.options.url,
-        polling: false,
-        port: this.options.methodValue,
-      });
+      this.options.polling = false;
     } else if (this.options.notificationMethod === 'polling') {
-      this.service = new restAPI.Service({
-        host: this.options.url,
-        polling: true,
-        interval: this.options.methodValue * 1000,
-      });
+      this.options.polling = true;
+      this.options.methodValue *= 1000;
     }
+    this.service = new restAPI.Service({
+      host: this.options.url,
+      polling: this.options.polling,
+      interval: this.options.methodValue,
+    });
     this.service.start();
   }
   RED.nodes.registerType('lesley-service', LesleyService);
