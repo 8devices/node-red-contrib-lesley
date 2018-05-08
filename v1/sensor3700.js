@@ -42,11 +42,12 @@ module.exports = function (RED) {
         node.cache[resourceName] = resourceValue;
         msg.payload.cache = node.cache;
         node.send(msg);
-      }).then(() => {
       }).catch((err) => {
-        const msg = {};
-        msg.payload = err;
-        node.error(msg);
+        if (typeof err === 'number') {
+          node.error(`Error code: ${err}`);
+        } else {
+          node.error(err);
+        }
       });
     }
 
@@ -133,18 +134,20 @@ module.exports = function (RED) {
       node.send(msg);
       configure();
     }).catch((err) => {
-      if (err === 404) {
-        const msg = {};
-        msg.payload = {};
-        node.state = false;
-        msg.payload.state = node.state;
-        msg.payload.data = {};
-        msg.payload.cache = node.cache;
-        node.send(msg);
+      if (typeof err === 'number') {
+        if (err === 404) {
+          const msg = {};
+          msg.payload = {};
+          node.state = false;
+          msg.payload.state = node.state;
+          msg.payload.data = {};
+          msg.payload.cache = node.cache;
+          node.send(msg);
+        } else {
+          node.error(`Error code: ${err}`);
+        }
       } else {
-        const msg = {};
-        msg.payload = err;
-        node.error(msg);
+        node.error(err);
       }
     });
   }
