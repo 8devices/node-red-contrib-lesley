@@ -1,74 +1,74 @@
 <script type="text/javascript">
-	RED.nodes.registerType("lesley-service", {
-		category: "config",
-		defaults: {
-			name: {value:"lesley-service", required:true},
-			url: {value:"http://localhost:8888", required:true},
-			notificationMethod: {value:'callback', required:true},
-			methodValue: {value:5728, required:true}
-		},
-		inputs: 0,
-		outputs: 0,
-		color: "rgb(75, 190, 255)",
-		label: function () {
-			return this.name;
-		},
-	});
+    RED.nodes.registerType("lesley-service", {
+        category: "config",
+        defaults: {
+            name: {value:"lesley-service", required:true},
+            url: {value:"http://localhost:8888", required:true},
+            notificationMethod: {value:'callback', required:true},
+            methodValue: {value:5728, required:true}
+        },
+        inputs: 0,
+        outputs: 0,
+        color: "rgb(75, 190, 255)",
+        label: function () {
+            return this.name;
+        },
+    });
 
-   function methodHandler(selectionId, methodValueId) {
-	 const selectionElement = document.getElementById(selectionId);
-	 var methodValue = document.getElementById(methodValueId);
+    function methodHandler(selectionId, methodValueId) {
+        const selectionElement = document.getElementById(selectionId);
+        var methodValue = document.getElementById(methodValueId);
 
-	 switch (selectionElement.value) {
-	   case 'polling': {
-		 methodValue.labels[0].innerHTML = 'Interval (s)';
-		 methodValue.value = 1;
-		 break;
-	   }
+        switch (selectionElement.value) {
+            case 'polling': {
+                methodValue.labels[0].innerHTML = 'Interval (s)';
+                methodValue.value = 1;
+                break;
+            }
 
-	   case 'callback': {
-		 methodValue.labels[0].innerHTML = 'Port';
-		 methodValue.value = 5728;
-		 break;
-	   }
-	 }
-   }
+            case 'callback': {
+                methodValue.labels[0].innerHTML = 'Port';
+                methodValue.value = 5728;
+                break;
+            }
+        }
+    }
 </script>
 
 <script type="text/x-red" data-template-name="lesley-service">
-	<div class="form-row">
-		<label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
-		<input type="text" id="node-config-input-name" placeholder="Name">
-	</div>
-	<div class="form-row">
-		<label for="node-config-input-url"> URL</label>
-		<input type="text" id="node-config-input-url">
-	</div>
-	<div class="form-row">
-		<label for="node-config-input-notificationMethod">Notification receiving method</label>
-		<select id="node-config-input-notificationMethod" onchange="methodHandler('node-config-input-notificationMethod', 'node-config-input-methodValue')">
-			<option value='callback'>Register a callback</option>
-			<option value='polling'>Pulling</option>
-		</select>
-	</div>
-	<div class="form-row">
-		<label for="node-config-input-methodValue">Port</label>
-		<input type="text" id="node-config-input-methodValue">
-	</div>
+    <div class="form-row">
+        <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-config-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-url"> URL</label>
+        <input type="text" id="node-config-input-url">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-notificationMethod">Notification receiving method</label>
+        <select id="node-config-input-notificationMethod" onchange="methodHandler('node-config-input-notificationMethod', 'node-config-input-methodValue')">
+            <option value='callback'>Register a callback</option>
+            <option value='polling'>Pulling</option>
+        </select>
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-methodValue">Port</label>
+        <input type="text" id="node-config-input-methodValue">
+    </div>
 </script>
 
 
 <script type="text/x-red" data-help-name="lesley-service">
-<p>Configuration node for Lesley nodes.</p>
-<p>Settings:</p>
-<ul>
-	<li>Name : Name of the node.</li>
-	<li>URL : REST server's URL.</li>
-	<li>Notification receiving method : 
-	Technology which would be used to obtain notifications
-	(Registering a callback and create a server to listen for notificaions or pulling out every interval of time).</li>
-	<li>Port / Interval (s) : Server's port or time interval in seconds depending on what notification recieving method is chosen.</li>
-</ul>
+    <p>Configuration node for Lesley nodes.</p>
+    <p>Settings:</p>
+    <ul>
+        <li>Name : Name of the node.</li>
+        <li>URL : REST server's URL.</li>
+        <li>Notification receiving method : 
+        Technology which would be used to obtain notifications
+        (Registering a callback and create a server to listen for notificaions or pulling out every interval of time).</li>
+        <li>Port / Interval (s) : Server's port or time interval in seconds depending on what notification recieving method is chosen.</li>
+    </ul>
 </script>
 
 
