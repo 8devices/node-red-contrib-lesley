@@ -5,22 +5,21 @@ const restAPI = require('restserver-api');
 module.exports = function (RED) {
   function LesleyService(config) {
     RED.nodes.createNode(this, config);
-    this.options = {};
-    this.options.name = config.name;
-    this.options.url = config.url;
-    this.options.notificationMethod = config.notificationMethod;
-    this.options.methodValue = config.methodValue;
-    if (this.options.notificationMethod === 'callback') {
-      this.options.polling = false;
-    } else if (this.options.notificationMethod === 'polling') {
-      this.options.polling = true;
-      this.options.methodValue *= 1000;
+    const options = {
+      host: 'http://localhost:8888',
+      interval: 1234,
+      polling: false,
+      port: 5728,
+    };
+    options.host = config.url;
+    if (config.notificationMethod === 'callback') {
+      options.polling = false;
+      options.port = config.methodValue;
+    } else if (config.notificationMethod === 'polling') {
+      options.polling = true;
+      options.interval = config.methodValue * 1000;
     }
-    this.service = new restAPI.Service({
-      host: this.options.url,
-      polling: this.options.polling,
-      interval: this.options.methodValue,
-    });
+    this.service = new restAPI.Service(options);
     this.service.start();
   }
   RED.nodes.registerType('lesley-service', LesleyService);
