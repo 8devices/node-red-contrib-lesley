@@ -78,11 +78,13 @@ module.exports = function (RED) {
               value: resourceValue,
             });
 
-            node.device.write(node.resourcePath, (statusCode) => {
+            node.device.write(node.resourcePath, (statusCode, payload) => {
               const msg = {};
               msg.payload = {};
-              msg.payload.code = {};
-              msg.payload.code[node.resourcePath] = statusCode;
+              msg.payload.uuid = node.name;
+              msg.payload.path = node.resourcePath;
+              msg.payload.statusCode = statusCode;
+              msg.payload.value = payload;
               node.send(msg);
             }, tlvBuffer)
               .catch((err) => {
@@ -108,8 +110,6 @@ module.exports = function (RED) {
             node.device.read(node.resourcePath, (statusCode, payload) => {
               const buffer = Buffer.from(payload, 'base64');
               const msg = {};
-              msg.payload = {};
-              msg.payload.data = {};
 
               switch (node.resourceType) {
                 case 'integer':
@@ -128,7 +128,11 @@ module.exports = function (RED) {
                 identifier: resourceIdentifier,
               });
 
-              msg.payload.data[node.resourcePath] = decodedResource.value;
+              msg.payload = {};
+              msg.payload.uuid = node.name;
+              msg.payload.path = node.resourcePath;
+              msg.payload.statusCode = statusCode;
+              msg.payload.value = decodedResource.value;
 
               node.send(msg);
             }).catch((err) => {
@@ -148,19 +152,25 @@ module.exports = function (RED) {
 
       case 'execute': {
         node.on('input', () => {
-          node.device.execute(node.resourcePath, (statusCode) => {
-            const msg = {};
-            msg.payload = {};
-            msg.payload.code = {};
-            msg.payload.code[node.resourcePath] = statusCode;
-            node.send(msg);
-          }).catch((err) => {
-            if (typeof err === 'number') {
-              node.error(`Error code: ${err}`);
-            } else {
-              node.error(err);
-            }
-          });
+          if (node.resourcePath.split('/').length === 4) {
+            node.device.execute(node.resourcePath, (statusCode, payload) => {
+              const msg = {};
+              msg.payload = {};
+              msg.payload.uuid = node.name;
+              msg.payload.path = node.resourcePath;
+              msg.payload.statusCode = statusCode;
+              msg.payload.value = payload;
+              node.send(msg);
+            }).catch((err) => {
+              if (typeof err === 'number') {
+                node.error(`Error code: ${err}`);
+              } else {
+                node.error(err);
+              }
+            });
+          } else {
+            node.error('Invalid path to resource. Must be "/object/instance/resource", e.g., "/1/0/3".');
+          }
         });
 
         break;
