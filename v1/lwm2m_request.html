@@ -143,23 +143,27 @@
 <p>If "read" is chosen variable type can also be choisen in which data will be represented.</p>
 <p>Write request choise also adds input value type choise.</p>
 <p>Input triggers the node to perform requests. It's value is equal to write request argument when performing write requests. For read and execute requests input message should not be empty or value should not be represented as "false".</p>
-<p>Read output message structure:</p>
+<p>Output message structure:</p>
 <ul>
     <li>msg.payload : <ul style="list-style-type:none">
-        <li>data: <ul style="list-style-type:none">
+        <li>uuid: <ul style="list-style-type:none">
             <li>
-                <i>Value which was read</i>
+                <i>Endpoint's identification</i>
             </li>
         </ul></li>
-    </ul>
-    </li>
-</ul>
-<p>Write and execute output message structure:</p>
-<ul>
-    <li>msg.payload : <ul style="list-style-type:none">
-        <li>code: <ul style="list-style-type:none">
+        <li>path: <ul style="list-style-type:none">
             <li>
-                <i>Response status code</i>
+                <i>LwM2M resource's path</i>
+            </li>
+        </ul></li>
+        <li>statusCode: <ul style="list-style-type:none">
+            <li>
+                <i>HTTP status code</i>
+            </li>
+        </ul></li>
+        <li>value: <ul style="list-style-type:none">
+            <li>
+                <i>Value of the resource</i>
             </li>
         </ul></li>
     </ul>
