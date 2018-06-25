@@ -5,7 +5,7 @@ const restAPI = require('restserver-api');
 module.exports = function (RED) {
   function LesleyService(config) {
     RED.nodes.createNode(this, config);
-    
+
     const serviceOptions = {
       host: 'http://localhost:8888',
       options: {
@@ -19,8 +19,8 @@ module.exports = function (RED) {
       polling: false,
       port: 5728,
     };
-    
-    let url = config.url;
+
+    let { url } = config;
     if ((url.indexOf('http://') !== 0) && (url.indexOf('https://') !== 0)) {
       if (config.useCa) {
         url = `https://${url}`;
