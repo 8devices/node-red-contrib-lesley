@@ -1,0 +1,180 @@
+<script type="text/javascript">
+    RED.nodes.registerType("sensor5200 in", {
+        category: "input",
+        defaults: {
+            uuid: {value: "", required: true},
+            interval: {value: 60},
+            service: {type: "lesley-service", required: true},
+            screenText: {value: false},
+            temperatureBME: {value: false},
+            humidityBME: {value: false},
+            pressureBME: {value: false},
+            gasBME: {value: false},
+            accelerometer: {value: false},
+            accelerometerX: {value: true},
+            accelerometerY: {value: true},
+            accelerometerZ: {value: true},
+            gyroscope: {value: false},
+            gyroscopeX: {value: true},
+            gyroscopeY: {value: true},
+            gyroscopeZ: {value: true},
+            magnetometer: {value: false},
+            magnetometerX: {value: true},
+            magnetometerY: {value: true},
+            magnetometerZ: {value: true},
+            temperatureHDC: {value: false},
+            humidityHDC: {value: false},
+            illuminance: {value: false},  
+        },
+        inputs: 1,
+        outputs: 1,
+        color: "rgb(204, 204, 0)",
+        label: function () {
+			return "sensor5200";
+        },
+        labelStyle: function() {
+            return this.name?"node_label_italic":"";
+        },
+        icon: "bridge.png",
+    });
+    
+        function xyzHandler(checkboxId, methodValueId) {
+        const checkboxElement = document.getElementById(checkboxId);
+        var checkboxes = document.getElementById(methodValueId);
+        
+        if(checkboxElement.checked === true){
+            checkboxes.style.visibility = 'visible';
+        }
+        else {
+           checkboxes.style.visibility = 'hidden';
+        }
+    }
+</script>
+
+<script type="text/x-red" data-template-name="sensor5200 in">
+    <div class="form-row">
+        <label for="node-input-uuid"> UUID</label>
+        <input type="text" id="node-input-uuid" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx">
+    </div>
+    <div class="form-row">
+        <label for="node-input-service"> Service</label>
+        <input type="text" id="node-input-service">
+    </div>
+    <p><strong>SSD1305 OLED</strong></p>
+    <div class="form-row">
+        <input type="checkbox" id="node-input-screenText" style="width: auto" checked>
+        <label for="node-input-screenText" style="width: auto">On-screen text</label>
+    </div>
+    <p><strong>Bosch BME680</strong></p>
+    <div class="form-row">
+        <input type="checkbox" id="node-input-temperatureBME" style="width: auto" checked>
+        <label for="node-input-temperatureBME" style="width: auto">Temperature</label>
+    </div>
+    <div class="form-row">
+        <input type="checkbox" id="node-input-humidityBME" style="width: auto" checked>
+        <label for="node-input-humidityBME" style="width: auto">Humidity</label>
+    </div>
+    <div class="form-row">
+        <input type="checkbox" id="node-input-pressureBME" style="width: auto" checked>
+        <label for="node-input-pressureBME" style="width: auto">Pressure</label>
+    </div>
+    <div class="form-row">
+        <input type="checkbox" id="node-input-gasBME" style="width: auto" checked>
+        <label for="node-input-gasBME" style="width: auto">Gas</label>
+    </div>
+    <p><strong>STMicroelectronics LSM9DS1</strong></p>
+	<div class="form-row">
+        <input type="checkbox" id="node-input-accelerometer" style="width: auto"  onchange="xyzHandler('node-input-accelerometer', 'accelerometer')">
+        <label for="node-input-accelerometer" style="width: auto">Accelerometer</label>
+        <class id='accelerometer'>
+			<input type="checkbox" id="node-input-accelerometerX" style="width: auto" checked>
+			<label for="node-input-accelerometerX" style="width: auto">X</label>
+			<input type="checkbox" id="node-input-accelerometerY" style="width: auto" checked>
+			<label for="node-input-accelerometerY" style="width: auto">Y</label>
+			<input type="checkbox" id="node-input-accelerometerZ" style="width: auto" checked>
+			<label for="node-input-accelerometerZ" style="width: auto">Z</label>
+        </class>
+    </div>
+    <div class="form-row">
+        <input type="checkbox" id="node-input-gyroscope" style="width: auto"  onchange="xyzHandler('node-input-gyroscope', 'gyroscope')">
+        <label for="node-input-gyroscope" style="width: auto">Gyroscope</label>
+        <class id='gyroscope'>
+			<input type="checkbox" id="node-input-gyroscopeX" style="width: auto" checked>
+			<label for="node-input-gyroscopeX" style="width: auto">X</label>
+			<input type="checkbox" id="node-input-gyroscopeY" style="width: auto" checked>
+			<label for="node-input-gyroscopeY" style="width: auto">Y</label>
+			<input type="checkbox" id="node-input-gyroscopeZ" style="width: auto" checked>
+			<label for="node-input-gyroscopeZ" style="width: auto">Z</label>
+        </class>
+    </div>
+    <div class="form-row">
+        <input type="checkbox" id="node-input-magnetometer" style="width: auto"  onchange="xyzHandler('node-input-magnetometer', 'magnetometer')">
+        <label for="node-input-magnetometer" style="width: auto">Magnetometer</label>
+        <class id='magnetometer'>
+			<input type="checkbox" id="node-input-magnetometerX" style="width: auto" checked>
+			<label for="node-input-magnetometerX" style="width: auto">X</label>
+			<input type="checkbox" id="node-input-magnetometerY" style="width: auto" checked>
+			<label for="node-input-magnetometerY" style="width: auto">Y</label>
+			<input type="checkbox" id="node-input-magnetometerZ" style="width: auto" checked>
+			<label for="node-input-magnetometerZ" style="width: auto">Z</label>
+        </class>
+    </div>
+    <p><strong>Texas Instruments HDC2010</strong></p>
+    <div class="form-row">
+        <input type="checkbox" id="node-input-temperatureHDC" style="width: auto" checked>
+        <label for="node-input-temperatureHDC" style="width: auto">Temperature</label>
+    </div>
+    <div class="form-row">
+        <input type="checkbox" id="node-input-humidityHDC" style="width: auto" checked>
+        <label for="node-input-humidityHDC" style="width: auto">Humidity</label>
+    </div>
+    <p><strong>Texas Instruments OPT3001</strong></p>
+    <div class="form-row">
+        <input type="checkbox" id="node-input-illuminance" style="width: auto" checked>
+        <label for="node-input-illuminance" style="width: auto">Ambient light</label>
+    </div>
+    <div class="form-row">
+        <label for="node-input-interval" style="width: auto">Observation time</label>
+        <input type="text" id="node-input-interval" size="60" style="overflow: scroll; width: 40px"></input>
+        <label for="node-input-interval"> seconds</label>
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="sensor5200 in">
+<p>This node sends requests to observe sensor's 5200 selected data. Outputs information when observe response is recieved.</p>
+<p>How often observation response data is recieved depends on observation time (seconds) which can be set in node's configuration window.</p>
+<p>Supported resources:</p>
+<ul>
+    <li>On-screen text: text which is written on the display screen (ouput name: screenText)</li>
+    <li>Temperature: Temperature in Celcius (ouput name: temperatureBME if its from Bosch BME680 sensor and temperatureHDC if its from Texas Instruments HDC2010 sensor)</li>
+    <li>Humidity: Relative humidity in % (ouput name: humidityBME if its from Bosch BME680 sensor and humidityHDC if its from Texas Instruments HDC2010 sensor)</li>
+    <li>Pressure: Barometric pressure in Pascal (ouput name: pressureBME)</li>
+	<li>Gas: (ouput name: gasBME)</li>
+	<li>Accelerometer: values in X, Y and Z axis (ouput name: accelerometerX, accelerometerY, accelerometerZ)</li>
+	<li>Gyroscope: values in X, Y and Z axis (ouput name: gyroscopeX, gyroscopeY, gyroscopeZ)</li>
+	<li>Magnetometer: values in X, Y and Z axis (ouput name: magnetometerX, magnetometerY, magnetometerZ)</li>
+	<li>Ambient light: illuminance (ouput name: illuminance)</li>
+</ul>
+<p>Input message structure:</p>
+<ul>
+    <li>msg.payload : number or string text which will be written on display screen<ul style="list-style-type:none">
+    </li>
+</ul>
+<p>Output message structure:</p>
+<ul>
+    <li>msg.payload : <ul style="list-style-type:none">
+        <li>state: sensor connection state</li>
+        <li>data: <ul style="list-style-type:none">
+            <li>
+                <i>current measurement name and value</i>
+            </li>
+        </ul></li>
+        <li>cache: <ul style="list-style-type:none">
+            <li>
+                <i>cached measurement names and values</i>
+            </li>
+        </ul></li>
+    </ul> 
+    </li>
+</ul>
+</script>
