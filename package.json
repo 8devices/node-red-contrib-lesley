@@ -18,6 +18,7 @@
       "lesley-sensor3800": "v1/sensor3800.js",
       "lesley-sensor4400": "v1/sensor4400.js",
       "lesley-sensor4500": "v1/sensor4500.js",
+      "lesley-sensor5200": "v1/sensor5200.js",
       "service-lesley": "nodes/service-lesley.js",
       "sensor3700_service": "nodes/sensor3700_service.js",
       "sensor3800_service": "nodes/sensor3800_service.js",
