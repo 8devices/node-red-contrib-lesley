@@ -17,7 +17,7 @@ module.exports = function (RED) {
     node.resourceType = config.resourceType;
     node.inputValue = config.resourceValue;
     node.valueSource = config.valueSource;
-
+	node.observeInterval = Number(config.observeInterval);
     node.device = new restAPI.Device(node.service.service, node.name);
 
     let resourceType;
@@ -160,6 +160,60 @@ module.exports = function (RED) {
               msg.payload.path = node.resourcePath;
               msg.payload.statusCode = statusCode;
               msg.payload.value = payload;
+              node.send(msg);
+            }).catch((err) => {
+              if (typeof err === 'number') {
+                node.error(`Error code: ${err}`);
+              } else {
+                node.error(err);
+              }
+            });
+          } else {
+            node.error('Invalid path to resource. Must be "/object/instance/resource", e.g., "/1/0/3".');
+          }
+        });
+
+        break;
+      }
+      
+      case 'observe': {
+		node.device.write('/1/0/3', () => {
+			}, encodeResource({
+			identifier: 3,
+			type: RESOURCE_TYPE.INTEGER,
+			value: node.observationInterval,
+		}));
+        node.on('input', () => {
+          if (node.resourcePath.split('/').length === 4) {
+            const resourceIdentifier = Number(node.resourcePath.split('/')[3]);
+
+            node.device.observe(node.resourcePath, (statusCode, payload) => {
+              const buffer = Buffer.from(payload, 'base64');
+              const msg = {};
+
+              switch (node.resourceType) {
+                case 'integer':
+                case 'float':
+                case 'string':
+                case 'boolean':
+                case 'opaque':
+                  resourceType = RESOURCE_TYPE[node.resourceType.toUpperCase()];
+                  break;
+                default:
+                  resourceType = RESOURCE_TYPE.STRING;
+              }
+
+              const decodedResource = decodeResource(buffer, {
+                type: resourceType,
+                identifier: resourceIdentifier,
+              });
+
+              msg.payload = {};
+              msg.payload.uuid = node.name;
+              msg.payload.path = node.resourcePath;
+              msg.payload.statusCode = statusCode;
+              msg.payload.value = decodedResource.value;
+
               node.send(msg);
             }).catch((err) => {
               if (typeof err === 'number') {

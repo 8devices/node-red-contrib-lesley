@@ -7,30 +7,42 @@
         element.style.display = 'block';
    }
 
-   function requestTypeHandler(selectionId, writeSectionId, readWriteSectionId) {
+   function requestTypeHandler(selectionId, writeSectionId, readWriteSectionId, observeInterval) {
      const selectionElement = document.getElementById(selectionId);
      const writeSectionElement = document.getElementById(writeSectionId);
      const readWriteSectionElement = document.getElementById(readWriteSectionId);
+     const observeSectionElement = document.getElementById(observeInterval);
      switch (selectionElement.value) {
        case 'write': {
          readWriteSectionElement.style.display = 'block';
          writeSectionElement.style.display = 'block';
+         observeSectionElement.style.display = 'none';
          break;
        }
 
        case 'read': {
          readWriteSectionElement.style.display = 'block';
          writeSectionElement.style.display = 'none';
+         observeSectionElement.style.display = 'none';
          break;
        }
 
        case 'execute': {
          readWriteSectionElement.style.display = 'none';
+         observeSectionElement.style.display = 'none';
+         break;
+       }
+       
+       case 'observe':{
+         readWriteSectionElement.style.display = 'block';
+         writeSectionElement.style.display = 'none';
+         observeSectionElement.style.display = 'block';
          break;
        }
 
        default: {
          readWriteSectionElement.style.display = 'none';
+         observeSectionElement.style.display = 'none';
        }
      }
    }
@@ -67,6 +79,7 @@
             resourceType: {value: "integer", required: true},
             valueSource: {value: "input", required: true},
             resourceValue: {value: ""},
+            observeInterval: {value: 1},
             name: {value:""},
         },
         inputs: 1,
@@ -97,10 +110,11 @@
     </div>
     <div class="form-row">
         <label for="node-input-requestType">Request type</label>
-        <select id="node-input-requestType" onchange="requestTypeHandler('node-input-requestType', 'writeRequestSection', 'readWriteRequestsSection')">
+        <select id="node-input-requestType" onchange="requestTypeHandler('node-input-requestType', 'writeRequestSection', 'readWriteRequestsSection', 'observeInterval')">
             <option value='read'>Read</option>
             <option value='write'>Write</option>
             <option value='execute'>Execute</option>
+            <option value='observe'>Observe</option>
         </select>
     </div>
     <div class="form-row">
@@ -132,6 +146,11 @@
             </div>
         </div>
     </div>
+		<div class="form-row" id="observeInterval">
+			<label for="node-input-observeInterval">Observation time<</label>
+			<input type="text" id="node-input-observeInterval" size="60" style="overflow: scroll; width: 40px"></input>
+        <label for="node-input-observeInterval"> second(s)</label>
+		</div>
     <div class="form-row">
         <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
