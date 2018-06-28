@@ -10,15 +10,14 @@ module.exports = function (RED) {
     RED.nodes.createNode(this, config);
     const node = this;
     node.service = RED.nodes.getNode(config.service);
-
     node.name = config.uuid;
+    node.device = new restAPI.Device(node.service.service, node.name);
     node.requestType = config.requestType;
     node.resourcePath = config.uri;
     node.resourceType = config.resourceType;
     node.inputValue = config.resourceValue;
     node.valueSource = config.valueSource;
-	node.observeInterval = Number(config.observeInterval);
-    node.device = new restAPI.Device(node.service.service, node.name);
+    node.observeInterval = config.observeInterval;
 
     let resourceType;
     switch (node.requestType) {
@@ -175,57 +174,63 @@ module.exports = function (RED) {
 
         break;
       }
-      
+
       case 'observe': {
-		node.device.write('/1/0/3', () => {
-			}, encodeResource({
-			identifier: 3,
-			type: RESOURCE_TYPE.INTEGER,
-			value: node.observationInterval,
-		}));
-        node.on('input', () => {
-          if (node.resourcePath.split('/').length === 4) {
-            const resourceIdentifier = Number(node.resourcePath.split('/')[3]);
+        if (!Number.isNaN(node.observeInterval) && (Number(node.observeInterval) % 1) === 0) {
+          node.device.write('/1/0/3', () => {
+          }, encodeResource({
+            identifier: 3,
+            type: RESOURCE_TYPE.INTEGER,
+            value: Number(node.observeInterval),
+          }));
 
-            node.device.observe(node.resourcePath, (statusCode, payload) => {
-              const buffer = Buffer.from(payload, 'base64');
-              const msg = {};
+          node.on('input', () => {
+            if (node.resourcePath.split('/').length === 4) {
+              const resourceIdentifier = Number(node.resourcePath.split('/')[3]);
 
-              switch (node.resourceType) {
-                case 'integer':
-                case 'float':
-                case 'string':
-                case 'boolean':
-                case 'opaque':
-                  resourceType = RESOURCE_TYPE[node.resourceType.toUpperCase()];
-                  break;
-                default:
-                  resourceType = RESOURCE_TYPE.STRING;
-              }
+              node.device.observe(node.resourcePath, (statusCode, payload) => {
+                node.observeStarted = true;
+                const buffer = Buffer.from(payload, 'base64');
+                const msg = {};
 
-              const decodedResource = decodeResource(buffer, {
-                type: resourceType,
-                identifier: resourceIdentifier,
+                switch (node.resourceType) {
+                  case 'integer':
+                  case 'float':
+                  case 'string':
+                  case 'boolean':
+                  case 'opaque':
+                    resourceType = RESOURCE_TYPE[node.resourceType.toUpperCase()];
+                    break;
+                  default:
+                    resourceType = RESOURCE_TYPE.STRING;
+                }
+
+                const decodedResource = decodeResource(buffer, {
+                  type: resourceType,
+                  identifier: resourceIdentifier,
+                });
+
+                msg.payload = {};
+                msg.payload.uuid = node.name;
+                msg.payload.path = node.resourcePath;
+                msg.payload.statusCode = statusCode;
+                msg.payload.value = decodedResource.value;
+
+                node.send(msg);
+              }).catch((err) => {
+                if (typeof err === 'number') {
+                  node.error(`Error code: ${err}`);
+                } else {
+                  node.error(err);
+                }
               });
-
-              msg.payload = {};
-              msg.payload.uuid = node.name;
-              msg.payload.path = node.resourcePath;
-              msg.payload.statusCode = statusCode;
-              msg.payload.value = decodedResource.value;
-
-              node.send(msg);
-            }).catch((err) => {
-              if (typeof err === 'number') {
-                node.error(`Error code: ${err}`);
-              } else {
-                node.error(err);
-              }
-            });
-          } else {
-            node.error('Invalid path to resource. Must be "/object/instance/resource", e.g., "/1/0/3".');
-          }
-        });
+            } else {
+              node.error('Invalid path to resource. Must be "/object/instance/resource", e.g., "/1/0/3".');
+            }
+          });
+        } else {
+          node.error('Invalid observation interval. Must be an integer, e.g., "1", "2", "3".');
+        }
 
         break;
       }
@@ -234,5 +239,14 @@ module.exports = function (RED) {
         node.error('Unknown LwM2M request type.');
     }
   }
+
   RED.nodes.registerType('LwM2M request in', SensorNode);
+
+  SensorNode.prototype.close = function () {
+    if (this.requestType === 'observe' && this.observeStarted) {
+      this.device.stopObserve(this.resourcePath).catch((err) => {
+        this.error(`Error stopping observation: ${err}`);
+      });
+    }
+  };
 };

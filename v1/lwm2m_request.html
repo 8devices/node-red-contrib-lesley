@@ -1,4 +1,33 @@
 <script type="text/javascript">
+    RED.nodes.registerType("LwM2M request in", {
+        category: "input",
+        defaults: {
+            uuid: {value: "", required: true},
+            service: {type: "lesley-service", required: true},
+            uri: {value: "", required: true},
+            requestType: {value: "read", required: true},
+            resourceType: {value: "integer", required: true},
+            valueSource: {value: "input", required: true},
+            resourceValue: {value: ""},
+            observeInterval: {value: 1},
+            name: {value:""},
+        },
+        inputs: 1,
+        outputs: 1,
+        color: "rgb(255, 111, 0)",
+        label: function () {
+            if (this.name) {
+              return this.name;
+            } else {
+              return "LwM2M request";
+            }
+        },
+        labelStyle: function() {
+            return this.name?"node_label_italic":"";
+        },
+        icon: "bridge.png",
+    });
+
    function toggleVisibility(id) {
      const element = document.getElementById(id);
      if(element.style.display == 'block')
@@ -68,37 +97,6 @@
    }
 </script>
 
-<script type="text/javascript">
-    RED.nodes.registerType("LwM2M request in", {
-        category: "input",
-        defaults: {
-            uuid: {value: "", required: true},
-            service: {type: "lesley-service", required: true},
-            uri: {value: "", required: true},
-            requestType: {value: "read", required: true},
-            resourceType: {value: "integer", required: true},
-            valueSource: {value: "input", required: true},
-            resourceValue: {value: ""},
-            observeInterval: {value: 1},
-            name: {value:""},
-        },
-        inputs: 1,
-        outputs: 1,
-        color: "rgb(255, 111, 0)",
-        label: function () {
-            if (this.name) {
-              return this.name;
-            } else {
-              return "LwM2M request";
-            }
-        },
-        labelStyle: function() {
-            return this.name?"node_label_italic":"";
-        },
-        icon: "bridge.png",
-    });
-</script>
-
 <script type="text/x-red" data-template-name="LwM2M request in">
     <div class="form-row">
         <label for="node-input-uuid">UUID</label>
@@ -146,11 +144,11 @@
             </div>
         </div>
     </div>
-		<div class="form-row" id="observeInterval">
-			<label for="node-input-observeInterval">Observation time<</label>
-			<input type="text" id="node-input-observeInterval" size="60" style="overflow: scroll; width: 40px"></input>
-        <label for="node-input-observeInterval"> second(s)</label>
-		</div>
+	<div class="form-row" id="observeInterval">
+		<label for="node-input-observeInterval">Observation time</label>
+		<input type="text" id="node-input-observeInterval" size="60" style="overflow: scroll; width: 40px"></input>
+		<label for="node-input-observeInterval"> second(s)</label>
+	</div>
     <div class="form-row">
         <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
@@ -161,6 +159,7 @@
 <p>This node is a tool that performs LWM2M requests such as read, write, execute. Endpoint name, resource path and request type are chosen in node configuration menu.</p>
 <p>If "read" is chosen variable type can also be choisen in which data will be represented.</p>
 <p>Write request choise also adds input value type choise.</p>
+<p>Observe request choise also adds observe time (how often data will be sent from the sensor in seconds) choise.</p>
 <p>Input triggers the node to perform requests. It's value is equal to write request argument when performing write requests. For read and execute requests input message should not be empty or value should not be represented as "false".</p>
 <p>Output message structure:</p>
 <ul>
