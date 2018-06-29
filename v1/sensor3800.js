@@ -20,6 +20,17 @@ module.exports = function (RED) {
     node.device = new restAPI.Device(node.service.service, node.name);
     node.state = false;
     node.cache = {};
+    node.resources = [];
+
+    function addResource(resourceName, resourcePath, resourceType, resourceNeed) {
+      const resource = {
+        name: resourceName,
+        path: resourcePath,
+        type: resourceType,
+        need: resourceNeed,
+      };
+      node.resources.push(resource);
+    }
 
     function observe(resourcePath, resourceName, resourceType) {
       node.device.observe(resourcePath, (err, response) => {
@@ -49,6 +60,10 @@ module.exports = function (RED) {
     }
 
     function configure() {
+      addResource('powerSourceVoltage', '/3/0/7', RESOURCE_TYPE.INTEGER, node.powerSourceVoltage);
+      addResource('temperature', '/3303/0/5700', RESOURCE_TYPE.FLOAT, node.temperature);
+      addResource('humidity', '/3304/0/5700', RESOURCE_TYPE.FLOAT, node.humidity);
+
       node.device.write('/1/0/3', () => {
       }, encodeResource({
         identifier: 3,
@@ -56,17 +71,11 @@ module.exports = function (RED) {
         value: node.observationInterval,
       }));
 
-      if (node.powerSourceVoltage) {
-        observe('/3/0/7', 'powerSourceVoltage', RESOURCE_TYPE.INTEGER);
-      }
-
-      if (node.temperature) {
-        observe('/3303/0/5700', 'temperature', RESOURCE_TYPE.FLOAT);
-      }
-
-      if (node.humidity) {
-        observe('/3304/0/5700', 'humidity', RESOURCE_TYPE.FLOAT);
-      }
+      node.resources.forEach((resource) => {
+        if (resource.need) {
+          observe(resource.path, resource.name, resource.type);
+        }
+      });
     }
 
     node.device.on('register', () => {
@@ -122,4 +131,14 @@ module.exports = function (RED) {
     });
   }
   RED.nodes.registerType('sensor3800 in', SensorNode);
+  SensorNode.prototype.close = function () {
+    const node = this;
+    this.resources.forEach((resource) => {
+      if (resource.need) {
+        node.device.stopObserve(resource.path).catch((err) => {
+          node.error(`Error stopping ${resource.name} observation (${node.name}/${resource.path}):${err}`);
+        });
+      }
+    });
+  };
 };

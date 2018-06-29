@@ -21,6 +21,17 @@ module.exports = function (RED) {
     node.device = new restAPI.Device(node.service.service, node.name);
     node.state = false;
     node.cache = {};
+    node.resources = [];
+
+    function addResource(resourceName, resourcePath, resourceType, resourceNeed) {
+      const resource = {
+        name: resourceName,
+        path: resourcePath,
+        type: resourceType,
+        need: resourceNeed,
+      };
+      node.resources.push(resource);
+    }
 
     function observe(resourcePath, resourceName, resourceType) {
       node.device.observe(resourcePath, (err, response) => {
@@ -50,6 +61,11 @@ module.exports = function (RED) {
     }
 
     function configure() {
+      addResource('powerSourceVoltage', '/3/0/7', RESOURCE_TYPE.INTEGER, node.powerSourceVoltage);
+      addResource('magneticField', '/3200/0/5500', RESOURCE_TYPE.BOOLEAN, node.magneticField);
+      addResource('magneticCounter', '/3200/0/5501', RESOURCE_TYPE.INTEGER, node.magneticCounter);
+      addResource('temperature', '/3303/0/5700', RESOURCE_TYPE.FLOAT, node.temperature);
+
       node.device.write('/1/0/3', () => {
       }, encodeResource({
         identifier: 3,
@@ -57,21 +73,11 @@ module.exports = function (RED) {
         value: node.observationInterval,
       }));
 
-      if (node.powerSourceVoltage) {
-        observe('/3/0/7', 'powerSourceVoltage', RESOURCE_TYPE.INTEGER);
-      }
-
-      if (node.magneticField) {
-        observe('/3200/0/5500', 'magneticField', RESOURCE_TYPE.BOOLEAN);
-      }
-
-      if (node.magneticCounter) {
-        observe('/3200/0/5501', 'magneticCounter', RESOURCE_TYPE.INTEGER);
-      }
-
-      if (node.temperature) {
-        observe('/3303/0/5700', 'temperature', RESOURCE_TYPE.FLOAT);
-      }
+      node.resources.forEach((resource) => {
+        if (resource.need) {
+          observe(resource.path, resource.name, resource.type);
+        }
+      });
     }
 
     node.device.on('register', () => {
@@ -127,4 +133,14 @@ module.exports = function (RED) {
     });
   }
   RED.nodes.registerType('sensor4400 in', SensorNode);
+  SensorNode.prototype.close = function () {
+    const node = this;
+    this.resources.forEach((resource) => {
+      if (resource.need) {
+        node.device.stopObserve(resource.path).catch((err) => {
+          node.error(`Error stopping ${resource.name} observation (${node.name}/${resource.path}):${err}`);
+        });
+      }
+    });
+  };
 };
