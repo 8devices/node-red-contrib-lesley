@@ -176,12 +176,12 @@ module.exports = function (RED) {
       }
 
       case 'observe': {
-        if (!Number.isNaN(node.observeInterval) && (Number(node.observeInterval) % 1) === 0) {
+        if (!Number.isNaN(node.observeInterval)) {
           node.device.write('/1/0/3', () => {
           }, encodeResource({
             identifier: 3,
             type: RESOURCE_TYPE.INTEGER,
-            value: Number(node.observeInterval),
+            value: Math.ceil(Number(node.observeInterval)),
           }));
 
           node.on('input', () => {
