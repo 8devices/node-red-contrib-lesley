@@ -163,5 +163,5 @@ module.exports = function (RED) {
     });
   };
 
-  RED.nodes.registerType('sensor5200 in', SensorNode);
+  RED.nodes.registerType('sensor3700 in', SensorNode);
 };
