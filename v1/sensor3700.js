@@ -156,7 +156,7 @@ module.exports = function (RED) {
     const node = this;
     this.resources.forEach((resource) => {
       if (resource.need) {
-        node.device.stopObserve(resource.path).catch((err) => {
+        node.device.cancelObserve(resource.path).catch((err) => {
           node.error(`Error stopping ${resource.name} observation (${node.name}/${resource.path}):${err}`);
         });
       }
