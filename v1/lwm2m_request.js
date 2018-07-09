@@ -240,8 +240,6 @@ module.exports = function (RED) {
     }
   }
 
-  RED.nodes.registerType('LwM2M request in', SensorNode);
-
   SensorNode.prototype.close = function () {
     if (this.requestType === 'observe' && this.observeStarted) {
       this.device.cancelObserve(this.resourcePath).catch((err) => {
@@ -249,4 +247,6 @@ module.exports = function (RED) {
       });
     }
   };
+
+  RED.nodes.registerType('LwM2M request in', SensorNode);
 };
