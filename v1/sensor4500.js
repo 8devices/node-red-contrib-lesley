@@ -128,7 +128,7 @@ module.exports = function (RED) {
       }
     });
   }
-  RED.nodes.registerType('sensor4500 in', SensorNode);
+
   SensorNode.prototype.close = function () {
     const node = this;
     this.resources.forEach((resource) => {
@@ -139,4 +139,6 @@ module.exports = function (RED) {
       }
     });
   };
+
+  RED.nodes.registerType('sensor5200 in', SensorNode);
 };
