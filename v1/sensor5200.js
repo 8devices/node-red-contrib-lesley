@@ -89,12 +89,7 @@ module.exports = function (RED) {
 
     node.on('input', (msg) => {
       if (typeof msg.payload === 'string' || typeof msg.payload === 'number') {
-        let argument;
-        if (typeof msg.payload === 'string') {
-          argument = msg.payload;
-        } else if (typeof msg.payload === 'number') {
-          argument = msg.payload.toString();
-        }
+        const argument = msg.payload.toString();
         node.device.write('/3341/0/5527', () => {
         }, encodeResource({
           identifier: 5527,
@@ -158,7 +153,7 @@ module.exports = function (RED) {
       }
     });
   }
-  RED.nodes.registerType('sensor5200 in', SensorNode);
+
   SensorNode.prototype.close = function () {
     const node = this;
     this.resources.forEach((resource) => {
@@ -169,4 +164,6 @@ module.exports = function (RED) {
       }
     });
   };
+
+  RED.nodes.registerType('sensor5200 in', SensorNode);
 };
