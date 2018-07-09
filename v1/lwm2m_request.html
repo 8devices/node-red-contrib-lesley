@@ -10,7 +10,7 @@
             valueSource: {value: "input", required: true},
             resourceValue: {value: ""},
             observeInterval: {value: 1},
-            name: {value:""},
+            name: {value: ""},
         },
         inputs: 1,
         outputs: 1,
@@ -23,7 +23,7 @@
             }
         },
         labelStyle: function() {
-            return this.name?"node_label_italic":"";
+            this.name ? "node_label_italic" : "";
         },
         icon: "bridge.png",
     });
@@ -36,11 +36,11 @@
         element.style.display = 'block';
    }
 
-   function requestTypeHandler(selectionId, writeSectionId, readWriteSectionId, observeInterval) {
+   function requestTypeHandler(selectionId, writeSectionId, readWriteSectionId, observeIntervalId) {
      const selectionElement = document.getElementById(selectionId);
      const writeSectionElement = document.getElementById(writeSectionId);
      const readWriteSectionElement = document.getElementById(readWriteSectionId);
-     const observeSectionElement = document.getElementById(observeInterval);
+     const observeSectionElement = document.getElementById(observeIntervalId);
      switch (selectionElement.value) {
        case 'write': {
          readWriteSectionElement.style.display = 'block';
@@ -108,7 +108,7 @@
     </div>
     <div class="form-row">
         <label for="node-input-requestType">Request type</label>
-        <select id="node-input-requestType" onchange="requestTypeHandler('node-input-requestType', 'writeRequestSection', 'readWriteRequestsSection', 'observeInterval')">
+        <select id="node-input-requestType" onchange="requestTypeHandler('node-input-requestType', 'writeRequestSection', 'readWriteRequestsSection', 'observeIntervalSection')">
             <option value='read'>Read</option>
             <option value='write'>Write</option>
             <option value='execute'>Execute</option>
@@ -144,7 +144,7 @@
             </div>
         </div>
     </div>
-	<div class="form-row" id="observeInterval">
+	<div class="form-row" id="observeIntervalSection">
 		<label for="node-input-observeInterval">Observation time</label>
 		<input type="text" id="node-input-observeInterval" size="60" style="overflow: scroll; width: 40px"></input>
 		<label for="node-input-observeInterval"> second(s)</label>
