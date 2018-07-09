@@ -19,6 +19,17 @@ module.exports = function (RED) {
     node.device = new restAPI.Device(node.service.service, node.name);
     node.state = false;
     node.cache = {};
+    node.resources = [];
+
+    function addResource(resourceName, resourcePath, resourceType, resourceNeed) {
+      const resource = {
+        name: resourceName,
+        path: resourcePath,
+        type: resourceType,
+        need: resourceNeed,
+      };
+      node.resources.push(resource);
+    }
 
     function observe(resourcePath, resourceName, resourceType) {
       node.device.observe(resourcePath, (err, response) => {
@@ -48,6 +59,9 @@ module.exports = function (RED) {
     }
 
     function configure() {
+      addResource('powerSourceVoltage', '/3/0/7', RESOURCE_TYPE.INTEGER, node.powerSourceVoltage);
+      addResource('voltage', '/3202/0/5600', RESOURCE_TYPE.FLOAT, node.voltage);
+
       node.device.write('/1/0/3', () => {
       }, encodeResource({
         identifier: 3,
@@ -55,13 +69,11 @@ module.exports = function (RED) {
         value: node.observationInterval,
       }));
 
-      if (node.powerSourceVoltage) {
-        observe('/3/0/7', 'powerSourceVoltage', RESOURCE_TYPE.INTEGER);
-      }
-
-      if (node.voltage) {
-        observe('/3202/0/5600', 'voltage', RESOURCE_TYPE.FLOAT);
-      }
+      node.resources.forEach((resource) => {
+        if (resource.need) {
+          observe(resource.path, resource.name, resource.type);
+        }
+      });
     }
 
     node.device.on('register', () => {
@@ -116,5 +128,17 @@ module.exports = function (RED) {
       }
     });
   }
+
+  SensorNode.prototype.close = function () {
+    const node = this;
+    this.resources.forEach((resource) => {
+      if (resource.need) {
+        node.device.cancelObserve(resource.path).catch((err) => {
+          node.error(`Error stopping ${resource.name} observation (${node.name}/${resource.path}):${err}`);
+        });
+      }
+    });
+  };
+
   RED.nodes.registerType('sensor4500 in', SensorNode);
 };
