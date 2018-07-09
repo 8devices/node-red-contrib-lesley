@@ -244,7 +244,7 @@ module.exports = function (RED) {
 
   SensorNode.prototype.close = function () {
     if (this.requestType === 'observe' && this.observeStarted) {
-      this.device.stopObserve(this.resourcePath).catch((err) => {
+      this.device.cancelObserve(this.resourcePath).catch((err) => {
         this.error(`Error stopping observation: ${err}`);
       });
     }
