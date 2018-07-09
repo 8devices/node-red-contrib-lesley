@@ -32,8 +32,6 @@ module.exports = function (RED) {
       node.device.observe(resourcePath, (err, response) => {
         const msg = {};
         const buffer = Buffer.from(response, 'base64');
-        console.log(response);
-        console.log(buffer);
         const decodedResource = decodeResource(buffer, {
           identifier: Number(resourcePath.split('/')[3]),
           type: resourceType,
