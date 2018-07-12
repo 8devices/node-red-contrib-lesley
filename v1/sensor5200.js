@@ -16,17 +16,59 @@ module.exports = function (RED) {
     node.device = new restAPI.Device(node.service.service, node.name);
     node.state = false;
     node.cache = {};
-    node.resources = [];
-
-    function addResource(resourceName, resourcePath, resourceType, resourceNeed) {
-      const resource = {
-        name: resourceName,
-        path: resourcePath,
-        type: resourceType,
-        need: resourceNeed,
-      };
-      node.resources.push(resource);
-    }
+    node.resources = [
+      {
+        name: 'screenText', path: '/3341/0/5527', type: RESOURCE_TYPE.STRING, need: config.screenText, observeStarted: false,
+      },
+      {
+        name: 'temperatureBME', path: '/3303/2/5700', type: RESOURCE_TYPE.FLOAT, need: config.temperatureBME, observeStarted: false,
+      },
+      {
+        name: 'humidityBME', path: '/3304/2/5700', type: RESOURCE_TYPE.FLOAT, need: config.humidityBME, observeStarted: false,
+      },
+      {
+        name: 'pressureBME', path: '/3315/2/5700', type: RESOURCE_TYPE.FLOAT, need: config.pressureBME, observeStarted: false,
+      },
+      {
+        name: 'gasBME', path: '/3327/2/5700', type: RESOURCE_TYPE.FLOAT, need: config.gasBME, observeStarted: false,
+      },
+      {
+        name: 'accelerometerX', path: '/3313/0/5702', type: RESOURCE_TYPE.FLOAT, need: config.accelerometerX, observeStarted: false,
+      },
+      {
+        name: 'accelerometerY', path: '/3313/0/5703', type: RESOURCE_TYPE.FLOAT, need: config.accelerometerY, observeStarted: false,
+      },
+      {
+        name: 'accelerometerZ', path: '/3313/0/5704', type: RESOURCE_TYPE.FLOAT, need: config.accelerometerZ, observeStarted: false,
+      },
+      {
+        name: 'gyroscopeX', path: '/3334/0/5702', type: RESOURCE_TYPE.FLOAT, need: config.gyroscopeX, observeStarted: false,
+      },
+      {
+        name: 'gyroscopeY', path: '/3334/0/5703', type: RESOURCE_TYPE.FLOAT, need: config.gyroscopeY, observeStarted: false,
+      },
+      {
+        name: 'gyroscopeZ', path: '/3334/0/5704', type: RESOURCE_TYPE.FLOAT, need: config.gyroscopeZ, observeStarted: false,
+      },
+      {
+        name: 'magnetometerX', path: '/3314/0/5702', type: RESOURCE_TYPE.FLOAT, need: config.magnetometerX, observeStarted: false,
+      },
+      {
+        name: 'magnetometerY', path: '/3314/0/5703', type: RESOURCE_TYPE.FLOAT, need: config.magnetometerY, observeStarted: false,
+      },
+      {
+        name: 'magnetometerZ', path: '/3314/0/5704', type: RESOURCE_TYPE.FLOAT, need: config.magnetometerZ, observeStarted: false,
+      },
+      {
+        name: 'temperatureHDC', path: '/3303/1/5700', type: RESOURCE_TYPE.FLOAT, need: config.temperatureHDC, observeStarted: false,
+      },
+      {
+        name: 'humidityHDC', path: '/3304/1/5700', type: RESOURCE_TYPE.FLOAT, need: config.humidityHDC, observeStarted: false,
+      },
+      {
+        name: 'illuminance', path: '/3301/0/5700', type: RESOURCE_TYPE.FLOAT, need: config.illuminance, observeStarted: false,
+      },
+    ];
 
     function observe(resourcePath, resourceName, resourceType) {
       node.device.observe(resourcePath, (err, response) => {
@@ -45,9 +87,15 @@ module.exports = function (RED) {
         node.cache[resourceName] = resourceValue;
         msg.payload.cache = node.cache;
         node.send(msg);
+      }).then(() => {
+        for (let i = 0; i < node.resources.length; i += 1) {
+          if (node.resources[i].name === resourceName) {
+            node.resources[i].observeStarted = true;
+          }
+        }
       }).catch((err) => {
         if (typeof err === 'number') {
-          node.error(`Error code: ${err}`);
+          node.error(`Error starting observation, code: ${err}`);
         } else {
           node.error(err);
         }
@@ -55,34 +103,22 @@ module.exports = function (RED) {
     }
 
     function configure() {
-      addResource('screenText', '/3341/0/5527', RESOURCE_TYPE.STRING, config.screenText);
-      addResource('temperatureBME', '/3303/2/5700', RESOURCE_TYPE.FLOAT, config.temperatureBME);
-      addResource('humidityBME', '/3304/2/5700', RESOURCE_TYPE.FLOAT, config.humidityBME);
-      addResource('pressureBME', '/3315/2/5700', RESOURCE_TYPE.FLOAT, config.pressureBME);
-      addResource('gasBME', '/3327/2/5700', RESOURCE_TYPE.FLOAT, config.gasBME);
-      addResource('accelerometerX', '/3313/0/5702', RESOURCE_TYPE.FLOAT, config.accelerometerX);
-      addResource('accelerometerY', '/3313/0/5703', RESOURCE_TYPE.FLOAT, config.accelerometerY);
-      addResource('accelerometerZ', '/3313/0/5704', RESOURCE_TYPE.FLOAT, config.accelerometerZ);
-      addResource('gyroscopeX', '/3334/0/5702', RESOURCE_TYPE.FLOAT, config.gyroscopeX);
-      addResource('gyroscopeY', '/3334/0/5703', RESOURCE_TYPE.FLOAT, config.gyroscopeY);
-      addResource('gyroscopeZ', '/3334/0/5704', RESOURCE_TYPE.FLOAT, config.gyroscopeZ);
-      addResource('magnetometerX', '/3314/0/5702', RESOURCE_TYPE.FLOAT, config.magnetometerX);
-      addResource('magnetometerY', '/3314/0/5703', RESOURCE_TYPE.FLOAT, config.magnetometerY);
-      addResource('magnetometerZ', '/3314/0/5704', RESOURCE_TYPE.FLOAT, config.magnetometerZ);
-      addResource('temperatureHDC', '/3303/1/5700', RESOURCE_TYPE.FLOAT, config.temperatureHDC);
-      addResource('humidityHDC', '/3304/1/5700', RESOURCE_TYPE.FLOAT, config.humidityHDC);
-      addResource('illuminance', '/3301/0/5700', RESOURCE_TYPE.FLOAT, config.illuminance);
-
       node.device.write('/1/0/3', () => {
       }, encodeResource({
         identifier: 3,
         type: RESOURCE_TYPE.INTEGER,
         value: node.observationInterval,
-      }));
-
-      node.resources.forEach((resource) => {
-        if (resource.need) {
-          observe(resource.path, resource.name, resource.type);
+      })).then(() => {
+        node.resources.forEach((resource) => {
+          if (resource.need) {
+            observe(resource.path, resource.name, resource.type);
+          }
+        });
+      }).catch((err) => {
+        if (typeof err === 'number') {
+          node.error(`Error setting observation time interval, code: ${err}`);
+        } else {
+          node.error(err);
         }
       });
     }
@@ -146,24 +182,43 @@ module.exports = function (RED) {
           msg.payload.cache = node.cache;
           node.send(msg);
         } else {
-          node.error(`Error code: ${err}`);
+          node.error(`Error getting objects for endpoint, code: ${err}`);
         }
       } else {
         node.error(err);
       }
     });
-  }
 
-  SensorNode.prototype.close = function () {
-    const node = this;
-    this.resources.forEach((resource) => {
-      if (resource.need) {
-        node.device.cancelObserve(resource.path).catch((err) => {
-          node.error(`Error stopping ${resource.name} observation (${node.name}/${resource.path}):${err}`);
-        });
+    this.on('close', (done) => {
+      let waiting = node.resources.length;
+
+      function finish() {
+        waiting -= 1;
+        if (waiting === 0) {
+          done();
+        }
       }
+
+      function checkResource(resource, callback) {
+        if (resource.need && resource.observeStarted && node.state) {
+          node.device.cancelObserve(resource.path)
+            .then(() => {
+              callback();
+            })
+            .catch((err) => {
+              node.error(`Error stopping observation for ${resource.name}: ${err}`);
+              callback();
+            });
+        } else {
+          callback();
+        }
+      }
+
+      node.resources.forEach((resource) => {
+        checkResource(resource, finish);
+      });
     });
-  };
+  }
 
   RED.nodes.registerType('sensor5200 in', SensorNode);
 };
