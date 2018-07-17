@@ -18,55 +18,55 @@ module.exports = function (RED) {
     node.cache = {};
     node.resources = [
       {
-        name: 'screenText', path: '/3341/0/5527', type: RESOURCE_TYPE.STRING, need: config.screenText, observeStarted: false,
+        name: 'screenText', path: '/3341/0/5527', type: RESOURCE_TYPE.STRING, need: config.screenText,
       },
       {
-        name: 'temperatureBME', path: '/3303/2/5700', type: RESOURCE_TYPE.FLOAT, need: config.temperatureBME, observeStarted: false,
+        name: 'temperatureBME', path: '/3303/2/5700', type: RESOURCE_TYPE.FLOAT, need: config.temperatureBME,
       },
       {
-        name: 'humidityBME', path: '/3304/2/5700', type: RESOURCE_TYPE.FLOAT, need: config.humidityBME, observeStarted: false,
+        name: 'humidityBME', path: '/3304/2/5700', type: RESOURCE_TYPE.FLOAT, need: config.humidityBME,
       },
       {
-        name: 'pressureBME', path: '/3315/2/5700', type: RESOURCE_TYPE.FLOAT, need: config.pressureBME, observeStarted: false,
+        name: 'pressureBME', path: '/3315/2/5700', type: RESOURCE_TYPE.FLOAT, need: config.pressureBME,
       },
       {
-        name: 'gasBME', path: '/3327/2/5700', type: RESOURCE_TYPE.FLOAT, need: config.gasBME, observeStarted: false,
+        name: 'gasBME', path: '/3327/2/5700', type: RESOURCE_TYPE.FLOAT, need: config.gasBME,
       },
       {
-        name: 'accelerometerX', path: '/3313/0/5702', type: RESOURCE_TYPE.FLOAT, need: config.accelerometerX, observeStarted: false,
+        name: 'accelerometerX', path: '/3313/0/5702', type: RESOURCE_TYPE.FLOAT, need: config.accelerometerX,
       },
       {
-        name: 'accelerometerY', path: '/3313/0/5703', type: RESOURCE_TYPE.FLOAT, need: config.accelerometerY, observeStarted: false,
+        name: 'accelerometerY', path: '/3313/0/5703', type: RESOURCE_TYPE.FLOAT, need: config.accelerometerY,
       },
       {
-        name: 'accelerometerZ', path: '/3313/0/5704', type: RESOURCE_TYPE.FLOAT, need: config.accelerometerZ, observeStarted: false,
+        name: 'accelerometerZ', path: '/3313/0/5704', type: RESOURCE_TYPE.FLOAT, need: config.accelerometerZ,
       },
       {
-        name: 'gyroscopeX', path: '/3334/0/5702', type: RESOURCE_TYPE.FLOAT, need: config.gyroscopeX, observeStarted: false,
+        name: 'gyroscopeX', path: '/3334/0/5702', type: RESOURCE_TYPE.FLOAT, need: config.gyroscopeX,
       },
       {
-        name: 'gyroscopeY', path: '/3334/0/5703', type: RESOURCE_TYPE.FLOAT, need: config.gyroscopeY, observeStarted: false,
+        name: 'gyroscopeY', path: '/3334/0/5703', type: RESOURCE_TYPE.FLOAT, need: config.gyroscopeY,
       },
       {
-        name: 'gyroscopeZ', path: '/3334/0/5704', type: RESOURCE_TYPE.FLOAT, need: config.gyroscopeZ, observeStarted: false,
+        name: 'gyroscopeZ', path: '/3334/0/5704', type: RESOURCE_TYPE.FLOAT, need: config.gyroscopeZ,
       },
       {
-        name: 'magnetometerX', path: '/3314/0/5702', type: RESOURCE_TYPE.FLOAT, need: config.magnetometerX, observeStarted: false,
+        name: 'magnetometerX', path: '/3314/0/5702', type: RESOURCE_TYPE.FLOAT, need: config.magnetometerX,
       },
       {
-        name: 'magnetometerY', path: '/3314/0/5703', type: RESOURCE_TYPE.FLOAT, need: config.magnetometerY, observeStarted: false,
+        name: 'magnetometerY', path: '/3314/0/5703', type: RESOURCE_TYPE.FLOAT, need: config.magnetometerY,
       },
       {
-        name: 'magnetometerZ', path: '/3314/0/5704', type: RESOURCE_TYPE.FLOAT, need: config.magnetometerZ, observeStarted: false,
+        name: 'magnetometerZ', path: '/3314/0/5704', type: RESOURCE_TYPE.FLOAT, need: config.magnetometerZ,
       },
       {
-        name: 'temperatureHDC', path: '/3303/1/5700', type: RESOURCE_TYPE.FLOAT, need: config.temperatureHDC, observeStarted: false,
+        name: 'temperatureHDC', path: '/3303/1/5700', type: RESOURCE_TYPE.FLOAT, need: config.temperatureHDC,
       },
       {
-        name: 'humidityHDC', path: '/3304/1/5700', type: RESOURCE_TYPE.FLOAT, need: config.humidityHDC, observeStarted: false,
+        name: 'humidityHDC', path: '/3304/1/5700', type: RESOURCE_TYPE.FLOAT, need: config.humidityHDC,
       },
       {
-        name: 'illuminance', path: '/3301/0/5700', type: RESOURCE_TYPE.FLOAT, need: config.illuminance, observeStarted: false,
+        name: 'illuminance', path: '/3301/0/5700', type: RESOURCE_TYPE.FLOAT, need: config.illuminance,
       },
     ];
 
@@ -87,10 +87,10 @@ module.exports = function (RED) {
         node.cache[resourceName] = resourceValue;
         msg.payload.cache = node.cache;
         node.send(msg);
-      }).then(() => {
+      }).then((resp) => {
         for (let i = 0; i < node.resources.length; i += 1) {
           if (node.resources[i].name === resourceName) {
-            node.resources[i].observeStarted = true;
+            node.resources[i].observeAsyncID = resp;
           }
         }
       }).catch((err) => {
@@ -190,32 +190,19 @@ module.exports = function (RED) {
     });
 
     this.on('close', (done) => {
-      let waiting = node.resources.length;
+      const cancelObservationPromises = [];
 
-      function finish() {
-        waiting -= 1;
-        if (waiting === 0) {
-          done();
+      for (let i = 0; i < node.resources.length; i += 1) {
+        if (node.resources[i].observeAsyncID !== undefined) {
+          cancelObservationPromises.push(node.device.cancelObserve(node.resources[i].path));
         }
       }
 
-      function checkResource(resource, callback) {
-        if (resource.need && resource.observeStarted && node.state) {
-          node.device.cancelObserve(resource.path)
-            .then(() => {
-              callback();
-            })
-            .catch((err) => {
-              node.error(`Error stopping observation for ${resource.name}: ${err}`);
-              callback();
-            });
-        } else {
-          callback();
-        }
-      }
-
-      node.resources.forEach((resource) => {
-        checkResource(resource, finish);
+      Promise.all(cancelObservationPromises).then(() => {
+        done();
+      }).catch((err) => {
+        node.error(err);
+        done();
       });
     });
   }
