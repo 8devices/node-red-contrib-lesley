@@ -21,23 +21,25 @@ module.exports = function (RED) {
     node.device = new restAPI.Device(node.service.service, node.name);
     node.state = false;
     node.cache = {};
-    node.resources = [];
-
-    function addResource(resourceName, resourcePath, resourceType, resourceNeed) {
-      const resource = {
-        name: resourceName,
-        path: resourcePath,
-        type: resourceType,
-        need: resourceNeed,
-      };
-      node.resources.push(resource);
-    }
+    node.resources = [
+      {
+        name: 'powerSourceVoltage', path: '/3/0/7', type: RESOURCE_TYPE.INTEGER, need: node.powerSourceVoltage,
+      },
+      {
+        name: 'magneticField', path: '/3200/0/5500', type: RESOURCE_TYPE.BOOLEAN, need: node.magneticField,
+      },
+      {
+        name: 'magneticCounter', path: '/3200/0/5501', type: RESOURCE_TYPE.INTEGER, need: node.magneticCounter,
+      },
+      {
+        name: 'temperature', path: '/3303/0/5700', type: RESOURCE_TYPE.FLOAT, need: node.temperature,
+      },
+    ];
 
     function observe(resourcePath, resourceName, resourceType) {
       node.device.observe(resourcePath, (err, response) => {
         const msg = {};
         const buffer = Buffer.from(response, 'base64');
-
         const decodedResource = decodeResource(buffer, {
           identifier: Number(resourcePath.split('/')[3]),
           type: resourceType,
@@ -51,9 +53,15 @@ module.exports = function (RED) {
         node.cache[resourceName] = resourceValue;
         msg.payload.cache = node.cache;
         node.send(msg);
+      }).then((resp) => {
+        for (let i = 0; i < node.resources.length; i += 1) {
+          if (node.resources[i].name === resourceName) {
+            node.resources[i].observeAsyncID = resp;
+          }
+        }
       }).catch((err) => {
         if (typeof err === 'number') {
-          node.error(`Error code: ${err}`);
+          node.error(`Error starting observation, code: ${err}`);
         } else {
           node.error(err);
         }
@@ -61,24 +69,40 @@ module.exports = function (RED) {
     }
 
     function configure() {
-      addResource('powerSourceVoltage', '/3/0/7', RESOURCE_TYPE.INTEGER, node.powerSourceVoltage);
-      addResource('magneticField', '/3200/0/5500', RESOURCE_TYPE.BOOLEAN, node.magneticField);
-      addResource('magneticCounter', '/3200/0/5501', RESOURCE_TYPE.INTEGER, node.magneticCounter);
-      addResource('temperature', '/3303/0/5700', RESOURCE_TYPE.FLOAT, node.temperature);
-
       node.device.write('/1/0/3', () => {
       }, encodeResource({
         identifier: 3,
         type: RESOURCE_TYPE.INTEGER,
         value: node.observationInterval,
-      }));
-
-      node.resources.forEach((resource) => {
-        if (resource.need) {
-          observe(resource.path, resource.name, resource.type);
+      })).then(() => {
+        node.resources.forEach((resource) => {
+          if (resource.need) {
+            observe(resource.path, resource.name, resource.type);
+          }
+        });
+      }).catch((err) => {
+        if (typeof err === 'number') {
+          node.error(`Error setting observation time interval, code: ${err}`);
+        } else {
+          node.error(err);
         }
       });
     }
+
+    node.on('input', (msg) => {
+      let relayState;
+      if (msg.payload) {
+        relayState = true;
+      } else {
+        relayState = false;
+      }
+      node.device.write('/3312/0/5850', () => {
+      }, encodeResource({
+        identifier: 5850,
+        type: RESOURCE_TYPE.BOOLEAN,
+        value: relayState,
+      }));
+    });
 
     node.device.on('register', () => {
       const msg = {};
@@ -125,24 +149,29 @@ module.exports = function (RED) {
           msg.payload.cache = node.cache;
           node.send(msg);
         } else {
-          node.error(`Error code: ${err}`);
+          node.error(`Error getting objects for endpoint, code: ${err}`);
         }
       } else {
         node.error(err);
       }
     });
-  }
 
-  SensorNode.prototype.close = function () {
-    const node = this;
-    this.resources.forEach((resource) => {
-      if (resource.need) {
-        node.device.cancelObserve(resource.path).catch((err) => {
-          node.error(`Error stopping ${resource.name} observation (${node.name}/${resource.path}):${err}`);
-        });
+    this.on('close', (done) => {
+      const cancelObservationPromises = [];
+
+      for (let i = 0; i < node.resources.length; i += 1) {
+        cancelObservationPromises.push(node.device.cancelObserve(node.resources[i].path));
       }
+
+      Promise.all(cancelObservationPromises).then(() => {
+        done();
+      }).catch((err) => {
+        node.error(err);
+        done();
+      });
     });
-  };
+  }
 
   RED.nodes.registerType('sensor4400 in', SensorNode);
 };
+
