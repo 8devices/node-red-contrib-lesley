@@ -241,19 +241,6 @@ module.exports = function (RED) {
     }
 
     this.on('close', (done) => {
-      const cancelObservationPromises = [];
-
-      for (let i = 0; i < node.resources.length; i += 1) {
-        cancelObservationPromises.push(node.device.cancelObserve(node.resources[i].path));
-      }
-
-      Promise.all(cancelObservationPromises).then(() => {
-        done();
-      }).catch((err) => {
-        node.error(err);
-        done();
-      });
-
       if (this.requestType === 'observe' && this.observeStarted) {
         this.device.cancelObserve(this.resourcePath).then(() => {
           done();
