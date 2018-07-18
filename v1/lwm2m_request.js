@@ -224,6 +224,7 @@ module.exports = function (RED) {
                 } else {
                   node.error(err);
                 }
+                node.observeStarted = false;
               });
             } else {
               node.error('Invalid path to resource. Must be "/object/instance/resource", e.g., "/1/0/3".');
