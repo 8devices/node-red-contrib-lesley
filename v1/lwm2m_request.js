@@ -242,13 +242,15 @@ module.exports = function (RED) {
     }
 
     this.on('close', (done) => {
-      if (this.requestType === 'observe' && this.observeStarted) {
-        this.device.cancelObserve(this.resourcePath).then(() => {
+      if (node.requestType === 'observe' && node.observeStarted) {
+        node.device.cancelObserve(node.resourcePath).then(() => {
           done();
         }).catch((err) => {
-          this.error(`Error stopping observation: ${err}`);
+          node.error(`Error stopping observation: ${err}`);
           done();
         });
+      } else {
+        done();
       }
     });
   }
