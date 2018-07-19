@@ -142,7 +142,9 @@ module.exports = function (RED) {
       const cancelObservationPromises = [];
 
       for (let i = 0; i < node.resources.length; i += 1) {
-        cancelObservationPromises.push(node.device.cancelObserve(node.resources[i].path));
+        if (node.resources[i].observeAsyncID !== undefined) {
+          cancelObservationPromises.push(node.device.cancelObserve(node.resources[i].path));
+        }
       }
 
       Promise.all(cancelObservationPromises).then(() => {
