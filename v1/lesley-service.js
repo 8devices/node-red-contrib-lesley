@@ -21,10 +21,15 @@ module.exports = function (RED) {
     }
     this.service = new restAPI.Service(options);
     this.service.start();
+
+    this.on('close', (done) => {
+      this.service.stop().then(() => {
+        done();
+      }).catch((err) => {
+        this.error(err);
+        done();
+      });
+    });
   }
   RED.nodes.registerType('lesley-service', LesleyService);
-
-  LesleyService.prototype.close = function () {
-    this.service.stop();
-  };
 };
