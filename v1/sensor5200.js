@@ -138,6 +138,7 @@ module.exports = function (RED) {
     });
 
     node.device.on('register', () => {
+      node.status({ fill: 'green', shape: 'dot', text: 'connected' });
       const msg = {};
       msg.payload = {};
       node.state = true;
@@ -149,10 +150,12 @@ module.exports = function (RED) {
     });
 
     node.device.on('update', () => {
+      node.status({ fill: 'green', shape: 'dot', text: 'connected' });
       node.state = true;
     });
 
     node.device.on('deregister', () => {
+      node.status({ fill: 'red', shape: 'dot', text: 'disconnected' });
       const msg = {};
       msg.payload = {};
       node.state = false;
@@ -163,6 +166,7 @@ module.exports = function (RED) {
     });
 
     node.device.getObjects().then(() => {
+      node.status({ fill: 'green', shape: 'dot', text: 'connected' });
       const msg = {};
       msg.payload = {};
       node.state = true;
@@ -174,6 +178,7 @@ module.exports = function (RED) {
     }).catch((err) => {
       if (typeof err === 'number') {
         if (err === 404) {
+          node.status({ fill: 'red', shape: 'dot', text: 'disconnected' });
           const msg = {};
           msg.payload = {};
           node.state = false;
