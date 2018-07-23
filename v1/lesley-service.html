@@ -8,13 +8,16 @@
       methodValue: {value:5728, required:true},
       useCa: {value: false},
       ca: {value:""},
-      caname: {value:""}
+      caname: {value:""},
+      useAuthentication: {value: false}
     },
     inputs: 0,
     outputs: 0,
     color: "rgb(75, 190, 255)",
     credentials: {
-      cadata: {type:"text"}
+      cadata: {type:"text"},
+      user: {type:"text"},
+      password: {type: "password"}
     },
     label: function () {
       return this.name;
@@ -44,19 +47,28 @@
         clearNameData("ca");
       });
       $("#lesley-service-caname").text(this.caname);
+      $("#node-config-input-useAuthentication").change(function() {
+        if ($(this).is(":checked")) {
+            $("#userRow").show();
+            $("#passwordRow").show();
+        } else {
+            $("#userRow").hide();
+            $('#node-config-input-user').val('');
+            $("#passwordRow").hide();
+            $('#node-config-input-password').val('');
+        }
+      });
     }
-
-    
   });
 
-  function caHandler(checkboxId, caId){
+  function caHandler(checkboxId, sectionId){
     const checkboxElement = document.getElementById(checkboxId);
-    var ca = document.getElementById(caId);
+    var section = document.getElementById(sectionId);
     if(checkboxElement.checked === true){
-      ca.style.display = 'block';
+      section.style.display = 'block';
     }
     else {
-       ca.style.display = 'none';
+       section.style.display = 'none';
     }
   }
 
@@ -89,8 +101,8 @@
     <input type="text" id="node-config-input-url">
   </div>
   <div class="form-row">
-    <label for="node-config-input-useCa" style="width: auto">Use CA Certificate for secure (SSL/TLS) connection</label>
     <input type="checkbox" id="node-config-input-useCa" style="width: auto" onchange="caHandler('node-config-input-useCa', 'caRow')">
+    <label for="node-config-input-useCa" style="width: auto">Use CA Certificate for secure (SSL/TLS) connection</label>
   </div>
   <div class="form-row" style="display: none;" id="caRow">
     <label style="width: 120px;" for="node-config-input-ca">CA Certificate</label>
@@ -102,6 +114,18 @@
     </span>
     <input type="hidden" id="node-config-input-caname">
     <input type="hidden" id="node-config-input-cadata">
+  </div>
+  <div class="form-row">
+    <input type="checkbox" id="node-config-input-useAuthentication" style="width: auto">
+    <label for="node-config-input-useAuthentication" style="width: auto">Use authentication</label>
+  </div>
+  <div class="form-row" style="display: none;" id="userRow">
+    <label for="node-config-input-user"><i class="fa fa-user"></i> Username</label>
+    <input type="text" id="node-config-input-user">
+  </div>
+  <div class="form-row" style="display: none;" id="passwordRow">
+    <label for="node-config-input-password"><i class="fa fa-lock"></i> Password</label>
+    <input type="password" id="node-config-input-password">
   </div>
   <div class="form-row">
     <label for="node-config-input-notificationMethod">Notification receiving method</label>
