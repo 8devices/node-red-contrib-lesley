@@ -15,6 +15,7 @@ module.exports = function (RED) {
         ca: '',
       },
       https: false,
+      authentication: false,
       username: '',
       password: '',
       interval: 1234,
@@ -43,6 +44,7 @@ module.exports = function (RED) {
     }
 
     if (config.useAuthentication) {
+      serviceOptions.authentication = true;
       serviceOptions.username = this.credentials.user;
       serviceOptions.password = this.credentials.password;
     }
@@ -56,7 +58,13 @@ module.exports = function (RED) {
     }
 
     this.service = new restAPI.Service(serviceOptions);
-    this.service.start();
+    this.service.start()
+      .then(() => {
+        this.emit('started');
+      })
+      .catch((err) => {
+        this.error(err);
+      });
   }
   RED.nodes.registerType('lesley-service', LesleyService, {
     credentials: {
