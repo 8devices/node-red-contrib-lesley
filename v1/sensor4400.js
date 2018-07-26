@@ -132,33 +132,35 @@ module.exports = function (RED) {
       node.send(msg);
     });
 
-    node.device.getObjects().then(() => {
-      node.status({ fill: 'green', shape: 'dot', text: 'connected' });
-      const msg = {};
-      msg.payload = {};
-      node.state = true;
-      msg.payload.state = node.state;
-      msg.payload.data = {};
-      msg.payload.cache = node.cache;
-      node.send(msg);
-      configure();
-    }).catch((err) => {
-      if (typeof err === 'number') {
-        if (err === 404) {
-          node.status({ fill: 'red', shape: 'dot', text: 'disconnected' });
-          const msg = {};
-          msg.payload = {};
-          node.state = false;
-          msg.payload.state = node.state;
-          msg.payload.data = {};
-          msg.payload.cache = node.cache;
-          node.send(msg);
+    node.service.on('started', () => {
+      node.device.getObjects().then(() => {
+        node.status({ fill: 'green', shape: 'dot', text: 'connected' });
+        const msg = {};
+        msg.payload = {};
+        node.state = true;
+        msg.payload.state = node.state;
+        msg.payload.data = {};
+        msg.payload.cache = node.cache;
+        node.send(msg);
+        configure();
+      }).catch((err) => {
+        if (typeof err === 'number') {
+          if (err === 404) {
+            node.status({ fill: 'red', shape: 'dot', text: 'disconnected' });
+            const msg = {};
+            msg.payload = {};
+            node.state = false;
+            msg.payload.state = node.state;
+            msg.payload.data = {};
+            msg.payload.cache = node.cache;
+            node.send(msg);
+          } else {
+            node.error(`Error getting objects for endpoint, code: ${err}`);
+          }
         } else {
-          node.error(`Error getting objects for endpoint, code: ${err}`);
+          node.error(err);
         }
-      } else {
-        node.error(err);
-      }
+      });
     });
 
     this.on('close', (done) => {

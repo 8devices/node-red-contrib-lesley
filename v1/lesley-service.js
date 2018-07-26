@@ -82,5 +82,4 @@ module.exports = function (RED) {
       password: { type: 'password' },
     },
   });
-
 };
