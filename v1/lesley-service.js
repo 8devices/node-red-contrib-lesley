@@ -65,6 +65,15 @@ module.exports = function (RED) {
       .catch((err) => {
         this.error(err);
       });
+
+    this.on('close', (done) => {
+      this.service.stop().then(() => {
+        done();
+      }).catch((err) => {
+        this.error(err);
+        done();
+      });
+    });
   }
   RED.nodes.registerType('lesley-service', LesleyService, {
     credentials: {
@@ -74,7 +83,4 @@ module.exports = function (RED) {
     },
   });
 
-  LesleyService.prototype.close = function () {
-    this.service.stop();
-  };
 };
