@@ -8,13 +8,7 @@ module.exports = function (RED) {
 
     const serviceOptions = {
       host: 'http://localhost:8888',
-      options: {
-        host: 'localhost',
-        port: '8888',
-        path: '/',
-        ca: '',
-      },
-      https: false,
+      ca: '',
       authentication: false,
       username: '',
       password: '',
@@ -32,15 +26,10 @@ module.exports = function (RED) {
       }
     }
 
-    if (url.indexOf('http://') === 0) {
-      serviceOptions.https = false;
-      serviceOptions.host = url;
-    } else if (url.indexOf('https://') === 0) {
-      serviceOptions.https = true;
-      const hostAddress = url.slice('https://'.length).split(':');
-      serviceOptions.options.host = hostAddress[0];
-      serviceOptions.options.port = hostAddress[1];
-      serviceOptions.options.ca = this.credentials.cadata;
+    serviceOptions.host = url;
+
+    if (config.useCa) {
+      serviceOptions.ca = this.credentials.cadata;
     }
 
     if (config.useAuthentication) {
