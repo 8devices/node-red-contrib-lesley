@@ -68,7 +68,7 @@ module.exports = function (RED) {
 
     serviceNode.on('close', (done) => {
       if (Object.keys(serviceNode.service.endpoints).length > 0) {
-        this.service.on('endpoint-de-attached', () => {
+        serviceNode.service.on('endpoint-de-attached', () => {
           if (Object.keys(serviceNode.service.endpoints).length === 0) {
             stopService(done);
           }
