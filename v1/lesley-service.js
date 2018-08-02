@@ -18,7 +18,7 @@ module.exports = function (RED) {
     };
 
     let { url } = config;
-    if ((url.indexOf('http://') !== 0) && (url.indexOf('https://') !== 0)) {
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
       if (config.useCa) {
         url = `https://${url}`;
       } else {
