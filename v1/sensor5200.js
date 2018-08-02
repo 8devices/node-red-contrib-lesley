@@ -70,6 +70,16 @@ module.exports = function (RED) {
       },
     ];
 
+    function setStatus(state) {
+      if (state) {
+        node.status({ fill: 'green', shape: 'dot', text: 'connected' });
+      } else if (state !== undefined && !state) {
+        node.status({ fill: 'red', shape: 'dot', text: 'disconnected' });
+      } else if (!state) {
+        node.status({ fill: 'grey', shape: 'dot', text: 'unknown' });
+      }
+    }
+
     function observe(resourcePath, resourceName, resourceType) {
       node.device.observe(resourcePath, (err, response) => {
         const msg = {};
@@ -123,6 +133,8 @@ module.exports = function (RED) {
       });
     }
 
+    setStatus();
+
     node.on('input', (msg) => {
       if (typeof msg.payload === 'string' || typeof msg.payload === 'number') {
         const argument = msg.payload.toString();
@@ -138,10 +150,10 @@ module.exports = function (RED) {
     });
 
     node.device.on('register', () => {
-      node.status({ fill: 'green', shape: 'dot', text: 'connected' });
       const msg = {};
       msg.payload = {};
       node.state = true;
+      setStatus(node.state);
       msg.payload.state = node.state;
       msg.payload.data = {};
       msg.payload.cache = node.cache;
@@ -150,15 +162,15 @@ module.exports = function (RED) {
     });
 
     node.device.on('update', () => {
-      node.status({ fill: 'green', shape: 'dot', text: 'connected' });
       node.state = true;
+      setStatus(node.state);
     });
 
     node.device.on('deregister', () => {
-      node.status({ fill: 'red', shape: 'dot', text: 'disconnected' });
       const msg = {};
       msg.payload = {};
       node.state = false;
+      setStatus(node.state);
       msg.payload.state = node.state;
       msg.payload.data = {};
       msg.payload.cache = node.cache;
@@ -167,10 +179,10 @@ module.exports = function (RED) {
 
     node.service.on('started', () => {
       node.device.getObjects().then(() => {
-        node.status({ fill: 'green', shape: 'dot', text: 'connected' });
         const msg = {};
         msg.payload = {};
         node.state = true;
+        setStatus(node.state);
         msg.payload.state = node.state;
         msg.payload.data = {};
         msg.payload.cache = node.cache;
@@ -179,10 +191,10 @@ module.exports = function (RED) {
       }).catch((err) => {
         if (typeof err === 'number') {
           if (err === 404) {
-            node.status({ fill: 'red', shape: 'dot', text: 'disconnected' });
             const msg = {};
             msg.payload = {};
             node.state = false;
+            setStatus(node.state);
             msg.payload.state = node.state;
             msg.payload.data = {};
             msg.payload.cache = node.cache;
