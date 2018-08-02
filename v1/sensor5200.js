@@ -206,9 +206,11 @@ module.exports = function (RED) {
       }
 
       Promise.all(cancelObservationPromises).then(() => {
+        node.device.disattach();
         done();
       }).catch((err) => {
         node.error(err);
+        node.device.disattach();
         done();
       });
     });

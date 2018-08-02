@@ -6,6 +6,8 @@ module.exports = function (RED) {
   function LesleyService(config) {
     RED.nodes.createNode(this, config);
 
+    const serviceNode = this;
+
     const serviceOptions = {
       host: 'http://localhost:8888',
       ca: '',
@@ -29,13 +31,13 @@ module.exports = function (RED) {
     serviceOptions.host = url;
 
     if (config.useCa) {
-      serviceOptions.ca = this.credentials.cadata;
+      serviceOptions.ca = serviceNode.credentials.cadata;
     }
 
     if (config.useAuthentication) {
       serviceOptions.authentication = true;
-      serviceOptions.username = this.credentials.user;
-      serviceOptions.password = this.credentials.password;
+      serviceOptions.username = serviceNode.credentials.user;
+      serviceOptions.password = serviceNode.credentials.password;
     }
 
     if (config.notificationMethod === 'callback') {
@@ -46,22 +48,34 @@ module.exports = function (RED) {
       serviceOptions.interval = config.methodValue * 1000;
     }
 
-    this.service = new restAPI.Service(serviceOptions);
-    this.service.start()
+    serviceNode.service = new restAPI.Service(serviceOptions);
+    serviceNode.service.start()
       .then(() => {
-        this.emit('started');
+        serviceNode.emit('started');
       })
       .catch((err) => {
-        this.error(err);
+        serviceNode.error(err);
       });
 
-    this.on('close', (done) => {
-      this.service.stop().then(() => {
-        done();
+    function stopService(callback) {
+      serviceNode.service.stop().then(() => {
+        callback();
       }).catch((err) => {
-        this.error(err);
-        done();
+        serviceNode.error(err);
+        callback();
       });
+    }
+
+    serviceNode.on('close', (done) => {
+      if (Object.keys(serviceNode.service.endpoints).length > 0) {
+        this.service.on('endpoint-de-attached', () => {
+          if (Object.keys(serviceNode.service.endpoints).length === 0) {
+            stopService(done);
+          }
+        });
+      } else {
+        stopService(done);
+      }
     });
   }
   RED.nodes.registerType('lesley-service', LesleyService, {
