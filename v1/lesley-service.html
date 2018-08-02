@@ -1,74 +1,153 @@
 <script type="text/javascript">
-    RED.nodes.registerType("lesley-service", {
-        category: "config",
-        defaults: {
-            name: {value:"lesley-service", required:true},
-            url: {value:"http://localhost:8888", required:true},
-            notificationMethod: {value:'callback', required:true},
-            methodValue: {value:5728, required:true}
-        },
-        inputs: 0,
-        outputs: 0,
-        color: "rgb(75, 190, 255)",
-        label: function () {
-            return this.name;
-        },
-    });
-
-    function methodHandler(selectionId, methodValueId) {
-        const selectionElement = document.getElementById(selectionId);
-        var methodValue = document.getElementById(methodValueId);
-
-        switch (selectionElement.value) {
-            case 'polling': {
-                methodValue.labels[0].innerHTML = 'Interval (s)';
-                methodValue.value = 1;
-                break;
-            }
-
-            case 'callback': {
-                methodValue.labels[0].innerHTML = 'Port';
-                methodValue.value = 5728;
-                break;
-            }
+  RED.nodes.registerType("lesley-service", {
+    category: "config",
+    defaults: {
+      name: {value:"lesley-service", required:true},
+      url: {value:"http://localhost:8888", required:true},
+      notificationMethod: {value:'callback', required:true},
+      methodValue: {value:5728, required:true},
+      useCa: {value: false},
+      ca: {value:""},
+      caname: {value:""},
+      useAuthentication: {value: false}
+    },
+    inputs: 0,
+    outputs: 0,
+    color: "rgb(75, 190, 255)",
+    credentials: {
+      cadata: {type:"text"},
+      user: {type:"text"},
+      password: {type: "password"}
+    },
+    label: function () {
+      return this.name;
+    },
+    oneditprepare: function() {
+      function saveFile(property, file) {
+        var dataInputId = "#node-config-input-"+property+"data";
+        var filenameInputId = "#node-config-input-"+property+"name";
+        var filename = file.name;
+        var reader = new FileReader();
+        reader.onload = function(event) {
+          $("#lesley-service-"+property+"name").text(filename);
+          $(filenameInputId).val(filename);
+          $(dataInputId).val(event.target.result);
         }
+        reader.readAsText(file,"UTF-8");
+      }
+      $("#node-config-input-cafile" ).change(function() {
+        saveFile("ca", this.files[0]);
+      });
+      function clearNameData(prop) {
+        $("#lesley-service-"+prop+"name").text("");
+        $("#node-config-input-"+prop+"data").val("");
+        $("#node-config-input-"+prop+"name").val("");
+      }
+      $("#lesley-service-button-ca-clear").click(function() {
+        clearNameData("ca");
+      });
+      $("#lesley-service-caname").text(this.caname);
+      $("#node-config-input-useAuthentication").change(function() {
+        if ($(this).is(":checked")) {
+            $("#userRow").show();
+            $("#passwordRow").show();
+        } else {
+            $("#userRow").hide();
+            $('#node-config-input-user').val('');
+            $("#passwordRow").hide();
+            $('#node-config-input-password').val('');
+        }
+      });
     }
+  });
+
+  function caHandler(checkboxId, sectionId){
+    const checkboxElement = document.getElementById(checkboxId);
+    var section = document.getElementById(sectionId);
+    if(checkboxElement.checked === true){
+      section.style.display = 'block';
+    }
+    else {
+       section.style.display = 'none';
+    }
+  }
+
+  function methodHandler(selectionId, methodValueId) {
+    const selectionElement = document.getElementById(selectionId);
+    var methodValue = document.getElementById(methodValueId);
+
+    switch (selectionElement.value) {
+      case 'polling': {
+        methodValue.labels[0].innerHTML = 'Interval (s)';
+        methodValue.value = 1;
+        break;
+      }
+
+      case 'callback': {
+        methodValue.labels[0].innerHTML = 'Port';
+        methodValue.value = 5728;
+        break;
+      }
+    }
+  }
 </script>
-
-<script type="text/x-red" data-template-name="lesley-service">
-    <div class="form-row">
-        <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
-        <input type="text" id="node-config-input-name" placeholder="Name">
-    </div>
-    <div class="form-row">
-        <label for="node-config-input-url"> URL</label>
-        <input type="text" id="node-config-input-url">
-    </div>
-    <div class="form-row">
-        <label for="node-config-input-notificationMethod">Notification receiving method</label>
-        <select id="node-config-input-notificationMethod" onchange="methodHandler('node-config-input-notificationMethod', 'node-config-input-methodValue')">
-            <option value='callback'>Register a callback</option>
-            <option value='polling'>Pulling</option>
-        </select>
-    </div>
-    <div class="form-row">
-        <label for="node-config-input-methodValue">Port</label>
-        <input type="text" id="node-config-input-methodValue">
-    </div>
+<script data-template-name="lesley-service" type="text/x-red">
+  <div class="form-row">
+    <label for="node-config-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-config-input-name" placeholder="Name">
+  </div>
+  <div class="form-row">
+    <label for="node-config-input-url">URL</label>
+    <input type="text" id="node-config-input-url">
+  </div>
+  <div class="form-row">
+    <input type="checkbox" id="node-config-input-useCa" style="width: auto" onchange="caHandler('node-config-input-useCa', 'caRow')">
+    <label for="node-config-input-useCa" style="width: auto">Use CA Certificate for secure (SSL/TLS) connection</label>
+  </div>
+  <div class="form-row" style="display: none;" id="caRow">
+    <label style="width: 120px;" for="node-config-input-ca">CA Certificate</label>
+    <span class="lesley-service-input-data">
+      <label class="editor-button" for="node-config-input-cafile">Upload</label>
+      <input class="hide" type="file" title=" " id="node-config-input-cafile">
+      <span id="lesley-service-caname" style="width: 180px; overflow: hidden; line-height:34px; height:34px; text-overflow: ellipsis; white-space: nowrap; display: inline-block; vertical-align: middle;"> </span>
+      <button class="editor-button editor-button-small" id="lesley-service-button-ca-clear" style="margin-left: 10px"><i class="fa fa-times"></i></button>
+    </span>
+    <input type="hidden" id="node-config-input-caname">
+    <input type="hidden" id="node-config-input-cadata">
+  </div>
+  <div class="form-row">
+    <input type="checkbox" id="node-config-input-useAuthentication" style="width: auto">
+    <label for="node-config-input-useAuthentication" style="width: auto">Use authentication</label>
+  </div>
+  <div class="form-row" style="display: none;" id="userRow">
+    <label for="node-config-input-user"><i class="fa fa-user"></i> Username</label>
+    <input type="text" id="node-config-input-user">
+  </div>
+  <div class="form-row" style="display: none;" id="passwordRow">
+    <label for="node-config-input-password"><i class="fa fa-lock"></i> Password</label>
+    <input type="password" id="node-config-input-password">
+  </div>
+  <div class="form-row">
+    <label for="node-config-input-notificationMethod">Notification receiving method</label>
+    <select id="node-config-input-notificationMethod" onchange="methodHandler('node-config-input-notificationMethod', 'node-config-input-methodValue')">
+      <option value='callback'>Register a callback</option>
+      <option value='polling'>Pulling</option>
+    </select>
+  </div>
+  <div class="form-row">
+    <label for="node-config-input-methodValue">Port</label>
+    <input type="text" id="node-config-input-methodValue">
+  </div>
 </script>
-
-
-<script type="text/x-red" data-help-name="lesley-service">
-    <p>Configuration node for Lesley nodes.</p>
-    <p>Settings:</p>
-    <ul>
-        <li>Name : Name of the node.</li>
-        <li>URL : REST server's URL.</li>
-        <li>Notification receiving method : 
-        Technology which would be used to obtain notifications
-        (Registering a callback and create a server to listen for notificaions or pulling out every interval of time).</li>
-        <li>Port / Interval (s) : Server's port or time interval in seconds depending on what notification recieving method is chosen.</li>
-    </ul>
+<script data-help-name="lesley-service" type="text/x-red">
+  <p>Configuration node for Lesley nodes.</p>
+  <p>Settings:</p>
+  <ul>
+    <li>Name : Name of the node.</li>
+    <li>URL : REST server's URL.</li>
+    <li>Notification receiving method :
+     Technology which would be used to obtain notifications
+    (Registering a callback and create a server to listen for notificaions or pulling out every interval of time).</li>
+    <li>Port / Interval (s) : Server's port or time interval in seconds depending on what notification recieving method is chosen.</li>
+  </ul>
 </script>
-
-
