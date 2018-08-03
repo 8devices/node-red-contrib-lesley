@@ -7,6 +7,7 @@ module.exports = function (RED) {
     RED.nodes.createNode(this, config);
 
     const serviceNode = this;
+    serviceNode.sensorNodes = [];
 
     const serviceOptions = {
       host: 'http://localhost:8888',
@@ -57,19 +58,29 @@ module.exports = function (RED) {
         serviceNode.error(err);
       });
 
+    serviceNode.attach = function (node) {
+      serviceNode.sensorNodes[node.id] = node;
+    };
+
+    serviceNode.deattach = function (node) {
+      console.log('PAVYKO');
+      delete serviceNode.sensorNodes[node.id];
+      serviceNode.emit('sensor-de-attached');
+    };
+
     function stopService(callback) {
-      serviceNode.service.stop().then(() => {
-        callback();
-      }).catch((err) => {
+      serviceNode.service.stop().catch((err) => {
         serviceNode.error(err);
+      }).finally(() => {
         callback();
       });
     }
 
     serviceNode.on('close', (done) => {
-      if (Object.keys(serviceNode.service.endpoints).length > 0) {
-        serviceNode.service.on('endpoint-de-attached', () => {
-          if (Object.keys(serviceNode.service.endpoints).length === 0) {
+      console.log(Object.keys(serviceNode.sensorNodes).length);
+      if (Object.keys(serviceNode.sensorNodes).length > 0) {
+        serviceNode.on('sensor-de-attached', () => {
+          if (Object.keys(serviceNode.sensorNodes).length === 0) {
             stopService(done);
           }
         });
