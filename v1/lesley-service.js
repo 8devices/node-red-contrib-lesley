@@ -63,7 +63,6 @@ module.exports = function (RED) {
     };
 
     serviceNode.deattach = function (node) {
-      console.log('PAVYKO');
       delete serviceNode.sensorNodes[node.id];
       serviceNode.emit('sensor-de-attached');
     };
@@ -77,7 +76,6 @@ module.exports = function (RED) {
     }
 
     serviceNode.on('close', (done) => {
-      console.log(Object.keys(serviceNode.sensorNodes).length);
       if (Object.keys(serviceNode.sensorNodes).length > 0) {
         serviceNode.on('sensor-de-attached', () => {
           if (Object.keys(serviceNode.sensorNodes).length === 0) {
