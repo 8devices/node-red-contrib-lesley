@@ -166,11 +166,10 @@ module.exports = function (RED) {
 
       Promise.all(cancelObservationPromises).catch((err) => {
         node.error(err);
-      })
-        .finally(() => {
-          node.service.deattach(node);
-          done();
-        });
+      }).finally(() => {
+        node.service.deattach(node);
+        done();
+      });
     });
   }
 
