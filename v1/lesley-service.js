@@ -62,7 +62,7 @@ module.exports = function (RED) {
       serviceNode.sensorNodes[node.id] = node;
     };
 
-    serviceNode.deattach = function (node) {
+    serviceNode.detach = function (node) {
       delete serviceNode.sensorNodes[node.id];
       serviceNode.emit('sensor-de-attached');
     };

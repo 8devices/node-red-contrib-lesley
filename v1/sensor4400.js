@@ -176,7 +176,7 @@ module.exports = function (RED) {
       Promise.all(cancelObservationPromises).catch((err) => {
         node.error(err);
       }).finally(() => {
-        node.service.deattach(node);
+        node.service.detach(node);
         done();
       });
     });
