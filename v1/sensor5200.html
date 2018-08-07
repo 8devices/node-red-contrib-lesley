@@ -5,6 +5,7 @@
             uuid: {value: "", required: true},
             interval: {value: 60},
             service: {type: "lesley-service", required: true},
+            powerSourceVoltage: {value: false},
             screenText: {value: false},
             temperatureBME: {value: false},
             humidityBME: {value: false},
@@ -90,6 +91,10 @@
         <label for="node-input-service"> Service</label>
         <input type="text" id="node-input-service">
     </div>
+    <div class="form-row">
+        <input type="checkbox" id="node-input-powerSourceVoltage" style="width: auto" checked>
+        <label for="node-input-powerSourceVoltage" style="width: auto">Battery voltage</label>
+    </div>
     <p><strong>SSD1305 OLED</strong></p>
     <div class="form-row">
         <input type="checkbox" id="node-input-screenText" style="width: auto" checked>
@@ -166,11 +171,11 @@
         <li>Temperature: Temperature in Celcius (ouput name: temperatureBME if its from Bosch BME680 sensor and temperatureHDC if its from Texas Instruments HDC2010 sensor)</li>
         <li>Humidity: Relative humidity in % (ouput name: humidityBME if its from Bosch BME680 sensor and humidityHDC if its from Texas Instruments HDC2010 sensor)</li>
         <li>Pressure: Barometric pressure in Pascal (ouput name: pressureBME)</li>
-    	<li>Gas: (ouput name: gasBME)</li>
-    	<li>Accelerometer: values in X, Y and Z axis (ouput name: accelerometerX, accelerometerY, accelerometerZ)</li>
-    	<li>Gyroscope: values in X, Y and Z axis (ouput name: gyroscopeX, gyroscopeY, gyroscopeZ)</li>
-    	<li>Magnetometer: values in X, Y and Z axis (ouput name: magnetometerX, magnetometerY, magnetometerZ)</li>
-    	<li>Ambient light: illuminance (ouput name: illuminance)</li>
+        <li>Gas: (ouput name: gasBME)</li>
+        <li>Accelerometer: values in X, Y and Z axis (ouput name: accelerometerX, accelerometerY, accelerometerZ)</li>
+        <li>Gyroscope: values in X, Y and Z axis (ouput name: gyroscopeX, gyroscopeY, gyroscopeZ)</li>
+        <li>Magnetometer: values in X, Y and Z axis (ouput name: magnetometerX, magnetometerY, magnetometerZ)</li>
+        <li>Ambient light: illuminance (ouput name: illuminance)</li>
     </ul>
     <p>Input message structure:</p>
     <ul>
