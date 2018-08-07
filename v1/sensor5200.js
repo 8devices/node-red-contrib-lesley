@@ -10,6 +10,8 @@ module.exports = function (RED) {
     RED.nodes.createNode(this, config);
     const node = this;
     node.service = RED.nodes.getNode(config.service);
+    node.service.attach(node);
+
     node.observationInterval = Number(config.interval);
     node.name = config.uuid;
     node.paths = [];
@@ -208,7 +210,7 @@ module.exports = function (RED) {
       });
     });
 
-    this.on('close', (done) => {
+    node.on('close', (done) => {
       const cancelObservationPromises = [];
 
       for (let i = 0; i < node.resources.length; i += 1) {
@@ -217,10 +219,10 @@ module.exports = function (RED) {
         }
       }
 
-      Promise.all(cancelObservationPromises).then(() => {
-        done();
-      }).catch((err) => {
+      Promise.all(cancelObservationPromises).catch((err) => {
         node.error(err);
+      }).finally(() => {
+        node.service.detach(node);
         done();
       });
     });

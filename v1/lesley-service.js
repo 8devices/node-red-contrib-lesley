@@ -6,6 +6,9 @@ module.exports = function (RED) {
   function LesleyService(config) {
     RED.nodes.createNode(this, config);
 
+    const serviceNode = this;
+    serviceNode.sensorNodes = [];
+
     const serviceOptions = {
       host: 'http://localhost:8888',
       ca: '',
@@ -29,13 +32,13 @@ module.exports = function (RED) {
     serviceOptions.host = url;
 
     if (config.useCa) {
-      serviceOptions.ca = this.credentials.cadata;
+      serviceOptions.ca = serviceNode.credentials.cadata;
     }
 
     if (config.useAuthentication) {
       serviceOptions.authentication = true;
-      serviceOptions.username = this.credentials.user;
-      serviceOptions.password = this.credentials.password;
+      serviceOptions.username = serviceNode.credentials.user;
+      serviceOptions.password = serviceNode.credentials.password;
     }
 
     if (config.notificationMethod === 'callback') {
@@ -46,22 +49,42 @@ module.exports = function (RED) {
       serviceOptions.interval = config.methodValue * 1000;
     }
 
-    this.service = new restAPI.Service(serviceOptions);
-    this.service.start()
+    serviceNode.service = new restAPI.Service(serviceOptions);
+    serviceNode.service.start()
       .then(() => {
-        this.emit('started');
+        serviceNode.emit('started');
       })
       .catch((err) => {
-        this.error(err);
+        serviceNode.error(err);
       });
 
-    this.on('close', (done) => {
-      this.service.stop().then(() => {
-        done();
-      }).catch((err) => {
-        this.error(err);
-        done();
+    serviceNode.attach = function (node) {
+      serviceNode.sensorNodes[node.id] = node;
+    };
+
+    serviceNode.detach = function (node) {
+      delete serviceNode.sensorNodes[node.id];
+      serviceNode.emit('sensor-de-attached');
+    };
+
+    function stopService(callback) {
+      serviceNode.service.stop().catch((err) => {
+        serviceNode.error(err);
+      }).finally(() => {
+        callback();
       });
+    }
+
+    serviceNode.on('close', (done) => {
+      if (Object.keys(serviceNode.sensorNodes).length > 0) {
+        serviceNode.on('sensor-de-attached', () => {
+          if (Object.keys(serviceNode.sensorNodes).length === 0) {
+            stopService(done);
+          }
+        });
+      } else {
+        stopService(done);
+      }
     });
   }
   RED.nodes.registerType('lesley-service', LesleyService, {
