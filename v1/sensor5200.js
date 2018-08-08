@@ -20,6 +20,9 @@ module.exports = function (RED) {
     node.cache = {};
     node.resources = [
       {
+        name: 'batteryVoltage', path: '/3/0/7', type: RESOURCE_TYPE.INTEGER, need: config.batteryVoltage,
+      },
+      {
         name: 'screenText', path: '/3341/0/5527', type: RESOURCE_TYPE.STRING, need: config.screenText,
       },
       {
