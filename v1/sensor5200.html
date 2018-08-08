@@ -5,7 +5,7 @@
             uuid: {value: "", required: true},
             interval: {value: 60},
             service: {type: "lesley-service", required: true},
-            powerSourceVoltage: {value: false},
+            batteryVoltage: {value: false},
             screenText: {value: false},
             temperatureBME: {value: false},
             humidityBME: {value: false},
@@ -92,8 +92,8 @@
         <input type="text" id="node-input-service">
     </div>
     <div class="form-row">
-        <input type="checkbox" id="node-input-powerSourceVoltage" style="width: auto" checked>
-        <label for="node-input-powerSourceVoltage" style="width: auto">Battery voltage</label>
+        <input type="checkbox" id="node-input-batteryVoltage" style="width: auto" checked>
+        <label for="node-input-batteryVoltage" style="width: auto">Battery voltage</label>
     </div>
     <p><strong>SSD1305 OLED</strong></p>
     <div class="form-row">
@@ -167,6 +167,7 @@
     <p>How often observation response data is recieved depends on observation time (seconds) which can be set in node's configuration window.</p>
     <p>Supported resources:</p>
     <ul>
+        <li>Battery voltage: value of sensor's battery voltage as integer in milivolts.</li>
         <li>On-screen text: text which is written on the display screen (ouput name: screenText)</li>
         <li>Temperature: Temperature in Celcius (ouput name: temperatureBME if its from Bosch BME680 sensor and temperatureHDC if its from Texas Instruments HDC2010 sensor)</li>
         <li>Humidity: Relative humidity in % (ouput name: humidityBME if its from Bosch BME680 sensor and humidityHDC if its from Texas Instruments HDC2010 sensor)</li>
