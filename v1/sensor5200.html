@@ -36,51 +36,30 @@
         labelStyle: function() {
             return this.name?"node_label_italic":"";
         },
-        icon: "bridge.png",
-        oneditprepare: function() {
-            function checkXYZ(xyz){
-                $(xyz+" input[type=checkbox]").each(function() {
-                    $(this).prop('checked', true);
-                });
-            }
-            function uncheckXYZ(xyz){
-                $(xyz+" input[type=checkbox]").each(function() {
-                    $(this).prop('checked', false);
-                });
-            }
-            $("#node-input-accelerometer" ).change(function() {
-                if($('#node-input-accelerometer').is(":checked")){
-                    checkXYZ("#accelerometerXYZ");
-                    $("#accelerometerXYZ").show();
-                }
-                else {
-                    uncheckXYZ("#accelerometerXYZ");
-                    $("#accelerometerXYZ").hide();
-                }
-            });
-            $("#node-input-gyroscope" ).change(function() {
-                if($('#node-input-gyroscope').is(":checked")){
-                    checkXYZ("#gyroscopeXYZ");
-                    $("#gyroscopeXYZ").show();
-                }
-                else {
-                    uncheckXYZ("#gyroscopeXYZ");
-                    $("#gyroscopeXYZ").hide();
-                }
-            });
-            $("#node-input-magnetometer" ).change(function() {
-                if($('#node-input-magnetometer').is(":checked")){
-                    checkXYZ("#magnetometerXYZ");
-                    $("#magnetometerXYZ").show();
-                }
-                else {
-                    uncheckXYZ("#magnetometerXYZ");
-                    $("#magnetometerXYZ").hide();
-                }
-            });
-        }
+        icon: "bridge.png"
     });
+    function xyzHandler(measurementId, xyzFieldId, xId, yId, zId) {
+      const measurement = document.getElementById(measurementId);
+      const xyzField = document.getElementById(xyzFieldId);
+      const x = document.getElementById(xId);
+      const y = document.getElementById(yId);
+      const z = document.getElementById(zId);
 
+      if (measurement.checked === true) {
+        xyzField.style.visibility = 'visible';
+        if (x.checked === false && y.checked === false && z.checked === false) {
+          x.checked = true;
+          y.checked = true;
+          z.checked = true;
+        }
+      }
+      else if (measurement.checked === false) {
+        xyzField.style.visibility = 'hidden';
+        x.checked = false;
+        y.checked = false;
+        z.checked = false;
+      }
+   }
 </script>
 <script type="text/x-red" data-template-name="sensor5200 in">
     <div class="form-row">
@@ -119,24 +98,24 @@
     </div>
     <p><strong>STMicroelectronics LSM9DS1</strong></p>
     <div class="form-row">
-        <input type="checkbox" id="node-input-accelerometer" style="width: auto"> Accelerometer 
-        <div id="accelerometerXYZ" style="display:inline">
+        <input type="checkbox" id="node-input-accelerometer" onchange="xyzHandler('node-input-accelerometer', 'accelerometerXYZ', 'node-input-accelerometerX', 'node-input-accelerometerY', 'node-input-accelerometerZ')" style="width: auto"> Accelerometer 
+        <div id="accelerometerXYZ" style="display:inline; visibility: hidden">
             <input type="checkbox" id="node-input-accelerometerX" style="width: auto;  margin-left:27px;"> X
             <input type="checkbox" id="node-input-accelerometerY" style="width: auto"> Y
             <input type="checkbox" id="node-input-accelerometerZ" style="width: auto"> Z
         </div>
     </div>
     <div class="form-row">
-        <input type="checkbox" id="node-input-gyroscope" style="width: auto"> Gyroscope 
-        <div id="gyroscopeXYZ" style="display:inline">
+        <input type="checkbox" id="node-input-gyroscope" onchange="xyzHandler('node-input-gyroscope', 'gyroscopeXYZ', 'node-input-gyroscopeX', 'node-input-gyroscopeY', 'node-input-gyroscopeZ')" style="width: auto"> Gyroscope 
+        <div id="gyroscopeXYZ" style="display:inline; visibility: hidden">
             <input type="checkbox" id="node-input-gyroscopeX" style="width: auto;  margin-left:50px;"> X
             <input type="checkbox" id="node-input-gyroscopeY" style="width: auto"> Y
             <input type="checkbox" id="node-input-gyroscopeZ" style="width: auto"> Z
         </div>
     </div>
     <div class="form-row">
-        <input type="checkbox" id="node-input-magnetometer" style="width: auto"> Magnetometer 
-        <div id="magnetometerXYZ" style="display:inline">
+        <input type="checkbox" id="node-input-magnetometer" onchange="xyzHandler('node-input-magnetometer', 'magnetometerXYZ', 'node-input-magnetometerX', 'node-input-magnetometerY', 'node-input-magnetometerZ')" style="width: auto"> Magnetometer 
+        <div id="magnetometerXYZ" style="display:inline; visibility: hidden">
             <input type="checkbox" id="node-input-magnetometerX" style="width: auto;  margin-left:26px;"> X
             <input type="checkbox" id="node-input-magnetometerY" style="width: auto"> Y
             <input type="checkbox" id="node-input-magnetometerZ" style="width: auto"> Z

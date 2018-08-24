@@ -29,7 +29,7 @@ module.exports = function (RED) {
         name: 'reactiveEnergy', path: '/3305/0/5815', type: RESOURCE_TYPE.FLOAT, need: config.reactiveEnergy,
       },
       {
-        name: 'relay', path: '/3305/0/5800', type: RESOURCE_TYPE.BOOLEAN, need: config.relay,
+        name: 'relay', path: '/3312/0/5850', type: RESOURCE_TYPE.BOOLEAN, need: node.relay,
       },
     ];
     sensorMethods.initialize(node, config);
