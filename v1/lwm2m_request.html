@@ -10,6 +10,7 @@
             noArgument: {value: false},
             valueSource: {value: "input", required: true},
             resourceValue: {value: ""},
+            contentType: {value: "application/vnd.oma.lwm2m+tlv"},
             observeInterval: {value: 1},
             name: {value: ""},
         },
@@ -42,6 +43,16 @@
      const writeSectionElement = document.getElementById(writeSectionId);
      const readWriteSectionElement = document.getElementById(readWriteSectionId);
      const observeSectionElement = document.getElementById(observeIntervalId);
+     const argumentCheckbox = document.getElementById("node-input-noArgument");
+     
+     if (argumentCheckbox.checked === true) {
+		argumentCheckbox.checked = false;
+        document.getElementById("node-input-resourceType").disabled = false;
+        document.getElementById("node-input-valueSource").disabled = false;
+        document.getElementById("node-input-resourceValue").disabled = false;
+        document.getElementById("node-input-contentType").disabled = false;
+     }
+     
      switch (selectionElement.value) {
        case 'write': {
          readWriteSectionElement.style.display = 'block';
@@ -98,21 +109,24 @@
      }
    }
    
-   function noArgumentHandler(checkboxId, valueTypeId, valueSourceId, textFieldId) {
+   function noArgumentHandler(checkboxId, valueTypeId, valueSourceId, textFieldId, contentTypeId) {
      const checkbox = document.getElementById(checkboxId);
-     const valueType = document.getElementById(selectionId);
+     const valueType = document.getElementById(valueTypeId);
      const valueSource = document.getElementById(valueSourceId);
      const textField = document.getElementById(textFieldId);
+     const contentType = document.getElementById(contentTypeId);
      
      if (checkbox.checked === true) {
-        valueType.disabled = false;
-        valueSource.disabled = false;
-        textField.disabled = false;
-     }
-     else if (checkbox.checked === false) {
         valueType.disabled = true;
         valueSource.disabled = true;
         textField.disabled = true;
+        contentType.disabled = true;
+     }
+     else if (checkbox.checked === false) {
+        valueType.disabled = false;
+        valueSource.disabled = false;
+        textField.disabled = false;
+        contentType.disabled = false;
      }
    }
 </script>
@@ -128,7 +142,7 @@
     </div>
     <div class="form-row">
         <label for="node-input-requestType">Request type</label>
-        <select id="node-input-requestType" onchange="requestTypeHandler('node-input-requestType', 'writeExecuteRequestSection', 'readWriteRequestsSection', 'observeIntervalSection')">
+        <select id="node-input-requestType" onchange="requestTypeHandler('node-input-requestType', 'writeRequestSection', 'readWriteRequestsSection', 'observeIntervalSection')">
             <option value='read'>Read</option>
             <option value='write'>Write</option>
             <option value='execute'>Execute</option>
@@ -150,10 +164,10 @@
                 <option value='opaque'>Opaque</option>
             </select>
         </div>
-        <div id="writeExecuteRequestSection">
+        <div id="writeRequestSection">
             <div class="form-row">
-                <input type="checkbox" id="node-input-noArgument" style="width: auto" onchange="noArgumentHandler('node-input-noArgument', 'node-input-resourceType', 'node-input-valueSource', 'node-input-resourceValue')">
-                <label for="node-input-noArgument" style="width: auto">Send request with no argument</label>
+                <input type="checkbox" id="node-input-noArgument" style="width: auto" onchange="noArgumentHandler('node-input-noArgument', 'node-input-resourceType', 'node-input-valueSource', 'node-input-resourceValue', 'node-input-contentType')">
+                <label for="node-input-noArgument"  style="width: auto">Send request with no argument</label>
             </div>
             <div class="form-row">
                 <label for="node-input-valueSource">Value source:</label>
@@ -164,7 +178,11 @@
             </div>
             <div class="form-row" id="resourceValueRegion">
                 <label for="node-input-resourceValue">Resource value</label>
-                <input type="text" id="node-input-resourceValue">
+                <input type="text" id="node-input-resourceValue" >
+            </div>
+            <div class="form-row">
+                <label for="node-input-contentType">Content type</label>
+                <input type="text" id="node-input-contentType" >
             </div>
         </div>
     </div>
