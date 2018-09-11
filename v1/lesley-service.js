@@ -65,7 +65,6 @@ module.exports = function (RED) {
 
     serviceNode.detach = function (node) {
       delete serviceNode.sensorNodes[node.id];
-      serviceNode.emit('sensor-de-attached');
     };
 
     function stopService(callback) {
