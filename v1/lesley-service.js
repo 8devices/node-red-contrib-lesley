@@ -56,7 +56,6 @@ module.exports = function (RED) {
       })
       .catch((err) => {
         serviceNode.error(err);
-        serviceNode.error('Service error catched!!!');
       });
 
     serviceNode.attach = function (node) {
@@ -65,6 +64,7 @@ module.exports = function (RED) {
 
     serviceNode.detach = function (node) {
       delete serviceNode.sensorNodes[node.id];
+      serviceNode.emit('sensor-de-attached');
     };
 
     function stopService(callback) {
