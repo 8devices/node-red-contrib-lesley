@@ -56,6 +56,7 @@ module.exports = function (RED) {
       })
       .catch((err) => {
         serviceNode.error(err);
+        serviceNode.error('Service error catched!!!');
       });
 
     serviceNode.attach = function (node) {
