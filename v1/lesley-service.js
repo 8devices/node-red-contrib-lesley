@@ -8,6 +8,7 @@ module.exports = function (RED) {
 
     const serviceNode = this;
     serviceNode.sensorNodes = [];
+    serviceNode.serverStatus = false;
 
     const serviceOptions = {
       host: 'http://localhost:8888',
@@ -66,6 +67,24 @@ module.exports = function (RED) {
       delete serviceNode.sensorNodes[node.id];
       serviceNode.emit('sensor-de-attached');
     };
+    
+    function startService() {
+		serviceNode.service.start()
+		  .then(() => {
+			serviceNode.emit('started');
+		  })
+		  .catch((err) => {
+			serviceNode.error(err);
+		  });
+	}
+    
+    function restartService() {
+	  serviceNode.service.stop().then(() => {
+        startService();
+      }).finally(() => {
+        
+      });
+	}
 
     function stopService(callback) {
       serviceNode.service.stop().catch((err) => {
