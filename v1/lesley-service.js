@@ -67,24 +67,39 @@ module.exports = function (RED) {
       delete serviceNode.sensorNodes[node.id];
       serviceNode.emit('sensor-de-attached');
     };
-    
-    function startService() {
-		serviceNode.service.start()
-		  .then(() => {
-			serviceNode.emit('started');
-		  })
-		  .catch((err) => {
-			serviceNode.error(err);
-		  });
-	}
-    
+
     function restartService() {
-	  serviceNode.service.stop().then(() => {
-        startService();
-      }).finally(() => {
-        
+      serviceNode.service.stop().then(() => serviceNode.service.start()).then(() => {
+        serviceNode.emit('started');
+      }).catch((err) => {
+        serviceNode.error(err);
       });
-	}
+    }
+
+    function startConnectionCheck() {
+      this.pollTimer = setInterval(() => {
+        serviceNode.service.getVersion().then(() => {
+          if (!serviceNode.serverStatus) {
+            serviceNode.serverStatus = true;
+            restartService();
+          }
+        }).catch(() => {
+          serviceNode.serverStatus = false;
+        });
+      }, 30000);
+    }
+
+    function startService() {
+      serviceNode.service.start()
+        .then(() => {
+          serviceNode.serverStatus = true;
+          serviceNode.emit('started');
+        }).catch((err) => {
+          serviceNode.error(err);
+        }).finally(() => {
+          startConnectionCheck();
+        });
+    }
 
     function stopService(callback) {
       serviceNode.service.stop().catch((err) => {
@@ -93,6 +108,8 @@ module.exports = function (RED) {
         callback();
       });
     }
+
+    startService();
 
     serviceNode.on('close', (done) => {
       if (Object.keys(serviceNode.sensorNodes).length > 0) {
