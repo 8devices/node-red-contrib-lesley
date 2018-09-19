@@ -8,7 +8,6 @@ module.exports = function (RED) {
 
     const serviceNode = this;
     serviceNode.sensorNodes = [];
-    serviceNode.serverStatus = false;
 
     const serviceOptions = {
       host: 'http://localhost:8888',
@@ -51,13 +50,6 @@ module.exports = function (RED) {
     }
 
     serviceNode.service = new restAPI.Service(serviceOptions);
-    serviceNode.service.start()
-      .then(() => {
-        serviceNode.emit('started');
-      })
-      .catch((err) => {
-        serviceNode.error(err);
-      });
 
     serviceNode.attach = function (node) {
       serviceNode.sensorNodes[node.id] = node;
@@ -76,28 +68,27 @@ module.exports = function (RED) {
       });
     }
 
-    function startConnectionCheck() {
-      this.pollTimer = setInterval(() => {
-        serviceNode.service.getVersion().then(() => {
-          if (!serviceNode.serverStatus) {
-            serviceNode.serverStatus = true;
-            restartService();
-          }
-        }).catch(() => {
-          serviceNode.serverStatus = false;
-        });
+    function startCallbackCheck() {
+      serviceNode.checkCallbackTimer = setInterval(() => {
+        serviceNode.service.checkNotificationCallback()
+          .catch((err) => {
+            if (err === 404) {
+              restartService();
+            }
+          });
       }, 30000);
     }
 
     function startService() {
       serviceNode.service.start()
         .then(() => {
-          serviceNode.serverStatus = true;
           serviceNode.emit('started');
         }).catch((err) => {
           serviceNode.error(err);
         }).finally(() => {
-          startConnectionCheck();
+          if (!serviceOptions.polling) {
+            startCallbackCheck();
+          }
         });
     }
 
@@ -105,6 +96,7 @@ module.exports = function (RED) {
       serviceNode.service.stop().catch((err) => {
         serviceNode.error(err);
       }).finally(() => {
+        clearInterval(serviceNode.checkCallbackTimer);
         callback();
       });
     }
