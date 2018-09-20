@@ -61,7 +61,7 @@ module.exports = function (RED) {
     };
 
     function restartService() {
-      serviceNode.service.stop().then(() => serviceNode.service.start()).then(() => {
+      serviceNode.service.start().then(() => {
         serviceNode.emit('started');
       }).catch((err) => {
         serviceNode.error(err);
