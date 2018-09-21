@@ -50,13 +50,6 @@ module.exports = function (RED) {
     }
 
     serviceNode.service = new restAPI.Service(serviceOptions);
-    serviceNode.service.start()
-      .then(() => {
-        serviceNode.emit('started');
-      })
-      .catch((err) => {
-        serviceNode.error(err);
-      });
 
     serviceNode.attach = function (node) {
       serviceNode.sensorNodes[node.id] = node;
@@ -67,13 +60,42 @@ module.exports = function (RED) {
       serviceNode.emit('sensor-de-attached');
     };
 
+    function startService(callback) {
+      serviceNode.service.start()
+        .then(() => {
+          serviceNode.emit('started');
+        }).catch((err) => {
+          serviceNode.error(err);
+        }).finally(() => {
+          if (callback !== undefined && !serviceOptions.polling) {
+            serviceNode.checkCallbackTimer = setInterval(() => {
+              callback();
+            }, 30000);
+          }
+        });
+    }
+
+    function callbackCheck() {
+      serviceNode.service.checkNotificationCallback()
+        .catch((err) => {
+          if (err === 404) {
+            startService();
+          }
+        });
+    }
+
     function stopService(callback) {
       serviceNode.service.stop().catch((err) => {
         serviceNode.error(err);
       }).finally(() => {
+        if (!serviceOptions.polling) {
+          clearInterval(serviceNode.checkCallbackTimer);
+        }
         callback();
       });
     }
+
+    startService(callbackCheck);
 
     serviceNode.on('close', (done) => {
       if (Object.keys(serviceNode.sensorNodes).length > 0) {
