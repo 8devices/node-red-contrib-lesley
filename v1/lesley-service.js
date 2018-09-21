@@ -60,34 +60,26 @@ module.exports = function (RED) {
       serviceNode.emit('sensor-de-attached');
     };
 
-    function restartService() {
-      serviceNode.service.start().then(() => {
-        serviceNode.emit('started');
-      }).catch((err) => {
-        serviceNode.error(err);
-      });
-    }
-
-    function startCallbackCheck() {
-      serviceNode.checkCallbackTimer = setInterval(() => {
-        serviceNode.service.checkNotificationCallback()
-          .catch((err) => {
-            if (err === 404) {
-              restartService();
-            }
-          });
-      }, 30000);
-    }
-
-    function startService() {
+    function startService(callback) {
       serviceNode.service.start()
         .then(() => {
           serviceNode.emit('started');
         }).catch((err) => {
           serviceNode.error(err);
         }).finally(() => {
-          if (!serviceOptions.polling) {
-            startCallbackCheck();
+          if (callback !== undefined && !serviceOptions.polling) {
+            serviceNode.checkCallbackTimer = setInterval(() => {
+              callback();
+            }, 30000);
+          }
+        });
+    }
+
+    function callbackCheck() {
+      serviceNode.service.checkNotificationCallback()
+        .catch((err) => {
+          if (err === 404) {
+            startService();
           }
         });
     }
@@ -96,12 +88,14 @@ module.exports = function (RED) {
       serviceNode.service.stop().catch((err) => {
         serviceNode.error(err);
       }).finally(() => {
-        clearInterval(serviceNode.checkCallbackTimer);
+        if (!serviceOptions.polling) {
+          clearInterval(serviceNode.checkCallbackTimer);
+        }
         callback();
       });
     }
 
-    startService();
+    startService(callbackCheck);
 
     serviceNode.on('close', (done) => {
       if (Object.keys(serviceNode.sensorNodes).length > 0) {
