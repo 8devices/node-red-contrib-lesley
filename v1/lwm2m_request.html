@@ -7,10 +7,8 @@
             uri: {value: "", required: true},
             requestType: {value: "read", required: true},
             resourceType: {value: "integer", required: true},
-            noArgument: {value: false},
             valueSource: {value: "input", required: true},
             resourceValue: {value: ""},
-            contentType: {value: "application/vnd.oma.lwm2m+tlv"},
             observeInterval: {value: 1},
             name: {value: ""},
         },
@@ -38,46 +36,36 @@
         element.style.display = 'block';
    }
 
-   function requestTypeHandler(selectionId, writeSectionId, readWriteSectionId, observeIntervalId) {
+   function requestTypeHandler(selectionId, writeExecuteSectionId, resourceTypeId, observeIntervalId) {
      const selectionElement = document.getElementById(selectionId);
-     const writeSectionElement = document.getElementById(writeSectionId);
-     const readWriteSectionElement = document.getElementById(readWriteSectionId);
+     const writeExecuteSectionElement = document.getElementById(writeExecuteSectionId);
+     const resourceTypeElement = document.getElementById(resourceTypeId);
      const observeSectionElement = document.getElementById(observeIntervalId);
-     const argumentCheckbox = document.getElementById("node-input-noArgument");
-     
-     if (argumentCheckbox.checked === true) {
-        argumentCheckbox.checked = false;
-        document.getElementById("node-input-resourceType").disabled = false;
-        document.getElementById("node-input-valueSource").disabled = false;
-        document.getElementById("node-input-resourceValue").disabled = false;
-        document.getElementById("node-input-contentType").disabled = false;
-     }
-     
      switch (selectionElement.value) {
        case 'write': {
-         readWriteSectionElement.style.display = 'block';
-         writeSectionElement.style.display = 'block';
+         resourceTypeElement.style.display = 'block';
+         writeExecuteSectionElement.style.display = 'block';
          observeSectionElement.style.display = 'none';
          break;
        }
 
        case 'read': {
-         readWriteSectionElement.style.display = 'block';
-         writeSectionElement.style.display = 'none';
+         resourceTypeElement.style.display = 'block';
+         writeExecuteSectionElement.style.display = 'none';
          observeSectionElement.style.display = 'none';
          break;
        }
 
        case 'execute': {
-         readWriteSectionElement.style.display = 'block';
-         writeSectionElement.style.display = 'block';
+         resourceTypeElement.style.display = 'none';
+         writeExecuteSectionElement.style.display = 'block';
          observeSectionElement.style.display = 'none';
          break;
        }
        
        case 'observe':{
-         readWriteSectionElement.style.display = 'block';
-         writeSectionElement.style.display = 'none';
+         resourceTypeElement.style.display = 'block';
+         writeExecuteSectionElement.style.display = 'none';
          observeSectionElement.style.display = 'block';
          break;
        }
@@ -108,27 +96,6 @@
        }
      }
    }
-   
-   function noArgumentHandler(checkboxId, valueTypeId, valueSourceId, textFieldId, contentTypeId) {
-     const checkbox = document.getElementById(checkboxId);
-     const valueType = document.getElementById(valueTypeId);
-     const valueSource = document.getElementById(valueSourceId);
-     const textField = document.getElementById(textFieldId);
-     const contentType = document.getElementById(contentTypeId);
-     
-     if (checkbox.checked === true) {
-        valueType.disabled = true;
-        valueSource.disabled = true;
-        textField.disabled = true;
-        contentType.disabled = true;
-     }
-     else if (checkbox.checked === false) {
-        valueType.disabled = false;
-        valueSource.disabled = false;
-        textField.disabled = false;
-        contentType.disabled = false;
-     }
-   }
 </script>
 
 <script type="text/x-red" data-template-name="LwM2M request in">
@@ -142,7 +109,7 @@
     </div>
     <div class="form-row">
         <label for="node-input-requestType">Request type</label>
-        <select id="node-input-requestType" onchange="requestTypeHandler('node-input-requestType', 'writeRequestSection', 'readWriteRequestsSection', 'observeIntervalSection')">
+        <select id="node-input-requestType" onchange="requestTypeHandler('node-input-requestType', 'writeExecuteSection', 'resourceType', 'observeIntervalSection')">
             <option value='read'>Read</option>
             <option value='write'>Write</option>
             <option value='execute'>Execute</option>
@@ -153,43 +120,33 @@
         <label for="node-input-uri">Resource path</label>
         <input type="text" id="node-input-uri">
     </div>
-    <div id='readWriteRequestsSection'>
+    <div class="form-row" id="resourceType">
+        <label for="node-input-resourceType">Resource type:</label>
+        <select id="node-input-resourceType">
+            <option value='integer'>Integer</option>
+            <option value='float'>Float</option>
+            <option value='string'>String</option>
+            <option value='boolean'>Boolean</option>
+            <option value='opaque'>Opaque</option>
+        </select>
+    </div>
+    <div id="writeExecuteSection">
         <div class="form-row">
-            <label for="node-input-resourceType">Resource type:</label>
-            <select id="node-input-resourceType">
-                <option value='integer'>Integer</option>
-                <option value='float'>Float</option>
-                <option value='string'>String</option>
-                <option value='boolean'>Boolean</option>
-                <option value='opaque'>Opaque</option>
+            <label for="node-input-valueSource">Value source:</label>
+            <select id="node-input-valueSource" onchange="inputSourceHandler('node-input-valueSource', 'resourceValueRegion')">
+                <option value='textbox'>Textbox</option>
+                <option value='input'>Input</option>
             </select>
         </div>
-        <div id="writeRequestSection">
-            <div class="form-row">
-                <input type="checkbox" id="node-input-noArgument" style="width: auto" onchange="noArgumentHandler('node-input-noArgument', 'node-input-resourceType', 'node-input-valueSource', 'node-input-resourceValue', 'node-input-contentType')">
-                <label for="node-input-noArgument"  style="width: auto">Send request with no argument</label>
-            </div>
-            <div class="form-row">
-                <label for="node-input-valueSource">Value source:</label>
-                <select id="node-input-valueSource" onchange="inputSourceHandler('node-input-valueSource', 'resourceValueRegion')">
-                    <option value='textbox'>Textbox</option>
-                    <option value='input'>Input</option>
-                </select>
-            </div>
-            <div class="form-row" id="resourceValueRegion">
-                <label for="node-input-resourceValue">Resource value</label>
-                <input type="text" id="node-input-resourceValue" >
-            </div>
-            <div class="form-row">
-                <label for="node-input-contentType">Content type</label>
-                <input type="text" id="node-input-contentType" >
-            </div>
+        <div class="form-row" id="resourceValueRegion">
+            <label for="node-input-resourceValue">Resource value</label>
+            <input type="text" id="node-input-resourceValue">
         </div>
     </div>
     <div class="form-row" id="observeIntervalSection">
-        <label for="node-input-observeInterval">Observation time</label>
-        <input type="text" id="node-input-observeInterval" size="60" style="overflow: scroll; width: 40px"></input>
-        <label for="node-input-observeInterval"> second(s)</label>
+      <label for="node-input-observeInterval">Observation time</label>
+      <input type="text" id="node-input-observeInterval" size="60" style="overflow: scroll; width: 40px"></input>
+      <label for="node-input-observeInterval"> second(s)</label>
     </div>
     <div class="form-row">
         <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>

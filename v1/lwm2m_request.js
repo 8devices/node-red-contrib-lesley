@@ -13,11 +13,9 @@ module.exports = function (RED) {
     node.name = config.uuid;
     node.device = new restAPI.Device(node.service.service, node.name);
     node.requestType = config.requestType;
-    node.noArgument = config.noArgument;
     node.resourcePath = config.uri;
     node.resourceType = config.resourceType;
     node.inputValue = config.resourceValue;
-    node.contentType = config.contentType;
     node.valueSource = config.valueSource;
     node.observeInterval = config.observeInterval;
 
@@ -25,86 +23,59 @@ module.exports = function (RED) {
     switch (node.requestType) {
       case 'write': {
         node.on('input', (input) => {
-          let content;
+          let resourceValue;
+          switch (node.valueSource) {
+            case 'textbox': {
+              resourceValue = node.inputValue;
+              break;
+            }
+
+            case 'input': {
+              resourceValue = input.payload;
+              break;
+            }
+
+            default:
+              return;
+          }
 
           if (node.resourcePath.split('/').length === 4) {
-            if (!node.noArgument) {
-              let resourceValue;
-              switch (node.valueSource) {
-                case 'textbox': {
-                  resourceValue = node.inputValue;
-                  break;
-                }
+            const resourceIdentifier = Number(node.resourcePath.split('/')[3]);
 
-                case 'input': {
-                  resourceValue = input.payload;
-                  break;
-                }
+            switch (node.resourceType) {
+              case 'integer':
+              case 'float': {
+                resourceValue = Number(resourceValue);
+                resourceType = RESOURCE_TYPE[node.resourceType.toUpperCase()];
 
-                default:
-                  return;
+                break;
               }
-              if (node.contentType === 'application/vnd.oma.lwm2m+tlv') {
-                const resourceIdentifier = Number(node.resourcePath.split('/')[3]);
+              case 'string': {
+                resourceType = RESOURCE_TYPE[node.resourceType.toUpperCase()];
 
-                switch (node.resourceType) {
-                  case 'integer':
-                  case 'float': {
-                    resourceValue = Number(resourceValue);
-                    resourceType = RESOURCE_TYPE[node.resourceType.toUpperCase()];
-
-                    break;
-                  }
-                  case 'string': {
-                    resourceType = RESOURCE_TYPE[node.resourceType.toUpperCase()];
-
-                    break;
-                  }
-                  case 'boolean': {
-                    resourceValue = Boolean(resourceValue);
-                    resourceType = RESOURCE_TYPE[node.resourceType.toUpperCase()];
-
-                    break;
-                  }
-                  case 'opaque': {
-                    resourceValue = Buffer.from(resourceValue);
-                    resourceType = RESOURCE_TYPE[node.resourceType.toUpperCase()];
-
-                    break;
-                  }
-                  default:
-                    return;
-                }
-
-                content = encodeResource({
-                  type: resourceType,
-                  identifier: resourceIdentifier,
-                  value: resourceValue,
-                });
-              } else {
-                switch (node.resourceType) {
-                  case 'integer':
-                  case 'float': {
-                    resourceValue = Number(resourceValue);
-                    break;
-                  }
-                  case 'string': {
-                    break;
-                  }
-                  case 'boolean': {
-                    resourceValue = Boolean(resourceValue);
-                    break;
-                  }
-                  case 'opaque': {
-                    resourceValue = Buffer.from(resourceValue);
-                    break;
-                  }
-                  default:
-                    return;
-                }
-                content = resourceValue;
+                break;
               }
+              case 'boolean': {
+                resourceValue = Boolean(resourceValue);
+                resourceType = RESOURCE_TYPE[node.resourceType.toUpperCase()];
+
+                break;
+              }
+              case 'opaque': {
+                resourceValue = Buffer.from(resourceValue);
+                resourceType = RESOURCE_TYPE[node.resourceType.toUpperCase()];
+
+                break;
+              }
+              default:
+                return;
             }
+
+            const tlvBuffer = encodeResource({
+              type: resourceType,
+              identifier: resourceIdentifier,
+              value: resourceValue,
+            });
 
             node.device.write(node.resourcePath, (statusCode, payload) => {
               const msg = {};
@@ -114,7 +85,7 @@ module.exports = function (RED) {
               msg.payload.statusCode = statusCode;
               msg.payload.value = payload;
               node.send(msg);
-            }, content, node.contentType)
+            }, tlvBuffer)
               .catch((err) => {
                 if (typeof err === 'number') {
                   node.error(`Error code: ${err}`);
@@ -180,86 +151,23 @@ module.exports = function (RED) {
 
       case 'execute': {
         node.on('input', (input) => {
-          let content;
-
-          if (node.resourcePath.split('/').length === 4) {
-            if (!node.noArgument) {
-              let resourceValue;
-              switch (node.valueSource) {
-                case 'textbox': {
-                  resourceValue = node.inputValue;
-                  break;
-                }
-
-                case 'input': {
-                  resourceValue = input.payload;
-                  break;
-                }
-
-                default:
-                  return;
-              }
-              if (node.contentType === 'application/vnd.oma.lwm2m+tlv') {
-                const resourceIdentifier = Number(node.resourcePath.split('/')[3]);
-
-                switch (node.resourceType) {
-                  case 'integer':
-                  case 'float': {
-                    resourceValue = Number(resourceValue);
-                    resourceType = RESOURCE_TYPE[node.resourceType.toUpperCase()];
-
-                    break;
-                  }
-                  case 'string': {
-                    resourceType = RESOURCE_TYPE[node.resourceType.toUpperCase()];
-
-                    break;
-                  }
-                  case 'boolean': {
-                    resourceValue = Boolean(resourceValue);
-                    resourceType = RESOURCE_TYPE[node.resourceType.toUpperCase()];
-
-                    break;
-                  }
-                  case 'opaque': {
-                    resourceValue = Buffer.from(resourceValue);
-                    resourceType = RESOURCE_TYPE[node.resourceType.toUpperCase()];
-
-                    break;
-                  }
-                  default:
-                    return;
-                }
-
-                content = encodeResource({
-                  type: resourceType,
-                  identifier: resourceIdentifier,
-                  value: resourceValue,
-                });
-              } else {
-                switch (node.resourceType) {
-                  case 'integer':
-                  case 'float': {
-                    resourceValue = Number(resourceValue);
-                    break;
-                  }
-                  case 'string': {
-                    break;
-                  }
-                  case 'boolean': {
-                    resourceValue = Boolean(resourceValue);
-                    break;
-                  }
-                  case 'opaque': {
-                    resourceValue = Buffer.from(resourceValue);
-                    break;
-                  }
-                  default:
-                    return;
-                }
-                content = resourceValue;
-              }
+          let resourceValue;
+          switch (node.valueSource) {
+            case 'textbox': {
+              resourceValue = node.inputValue;
+              console.log(resourceValue);
+              break;
             }
+
+            case 'input': {
+              resourceValue = input.payload;
+              break;
+            }
+
+            default:
+              return;
+          }
+          if (node.resourcePath.split('/').length === 4) {
             node.device.execute(node.resourcePath, (statusCode, payload) => {
               const msg = {};
               msg.payload = {};
@@ -268,7 +176,7 @@ module.exports = function (RED) {
               msg.payload.statusCode = statusCode;
               msg.payload.value = payload;
               node.send(msg);
-            }, content, node.contentType).catch((err) => {
+            }, resourceValue).catch((err) => {
               if (typeof err === 'number') {
                 node.error(`Error code: ${err}`);
               } else {
