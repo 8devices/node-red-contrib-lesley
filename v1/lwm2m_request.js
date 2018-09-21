@@ -155,7 +155,6 @@ module.exports = function (RED) {
           switch (node.valueSource) {
             case 'textbox': {
               resourceValue = node.inputValue;
-              console.log(resourceValue);
               break;
             }
 
