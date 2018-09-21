@@ -150,7 +150,22 @@ module.exports = function (RED) {
       }
 
       case 'execute': {
-        node.on('input', () => {
+        node.on('input', (input) => {
+          let resourceValue;
+          switch (node.valueSource) {
+            case 'textbox': {
+              resourceValue = node.inputValue;
+              break;
+            }
+
+            case 'input': {
+              resourceValue = input.payload;
+              break;
+            }
+
+            default:
+              return;
+          }
           if (node.resourcePath.split('/').length === 4) {
             node.device.execute(node.resourcePath, (statusCode, payload) => {
               const msg = {};
@@ -160,7 +175,7 @@ module.exports = function (RED) {
               msg.payload.statusCode = statusCode;
               msg.payload.value = payload;
               node.send(msg);
-            }).catch((err) => {
+            }, resourceValue).catch((err) => {
               if (typeof err === 'number') {
                 node.error(`Error code: ${err}`);
               } else {
