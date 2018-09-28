@@ -1,17 +1,31 @@
 'use strict';
 
 const restAPI = require('restserver-api');
-const sensorMethods = require('./sensorMethods.js');
+const genericSensor = require('./generic_sensor.js');
 
 const { Lwm2m } = restAPI;
-const { RESOURCE_TYPE, encodeResource } = Lwm2m.TLV;
+const { RESOURCE_TYPE, encodeResource, decodeResource } = Lwm2m.TLV;
 
 module.exports = function (RED) {
+  console.log('EXPORTS');
+  let module_export = new genericSensor.Sensor(RED);
+
   function SensorNode(config) {
+    console.log('NODE FUNCTION');
+    //const nodeFunction = new genericSensor.Sensor(RED);
     RED.nodes.createNode(this, config);
     const node = this;
     node.service = RED.nodes.getNode(config.service);
+    node.service.attach(node);
 
+    node.observationInterval = Number(config.interval);
+    node.name = config.uuid;
+    node.paths = [];
+    node.device = new restAPI.Device(node.service.service, node.name);
+        console.log( node.device);
+
+    node.state = false;
+    node.cache = {};
     node.resources = [
       {
         name: 'batteryVoltage', path: '/3/0/7', type: RESOURCE_TYPE.INTEGER, need: config.batteryVoltage,
@@ -68,9 +82,6 @@ module.exports = function (RED) {
         name: 'illuminance', path: '/3301/0/5700', type: RESOURCE_TYPE.FLOAT, need: config.illuminance,
       },
     ];
-    sensorMethods.initialize(node, config);
-    sensorMethods.setStatus(node);
-    sensorMethods.registerEvents(node);
 
     node.on('input', (msg) => {
       if (typeof msg.payload === 'string' || typeof msg.payload === 'number') {
@@ -86,6 +97,10 @@ module.exports = function (RED) {
       }
     });
   }
+  console.log("^^^^^^^^^^^^^^^^");
+  console.log(module_export);
+  module_export.initilize();
+  console.log("^^^^^^^^^^^^^^^^");
 
-  RED.nodes.registerType('sensor5200 in', SensorNode);
+  RED.nodes.registerType('sensor5200 in', module_export.initilize);
 };
