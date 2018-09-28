@@ -78,7 +78,7 @@ module.exports = function (RED) {
     function callbackCheck() {
       serviceNode.service.checkNotificationCallback()
         .catch((err) => {
-          if (err === 404) {
+          if (err === 404 || err.code === 'incorrectIpAdress') {
             startService();
           }
         });
