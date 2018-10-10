@@ -9,8 +9,12 @@ const { RESOURCE_TYPE, encodeResource } = Lwm2m.TLV;
 module.exports = function (RED) {
   function SensorNode(config) {
     RED.nodes.createNode(this, config);
-    const node = this;
-    node.service = RED.nodes.getNode(config.service);
+	this.service = RED.nodes.getNode(config.service);
+    this.service.attach(this);
+    this.observationInterval = Number(config.interval);
+    this.name = config.uuid;
+    this.device = new restAPI.Device(this.service.service, this.name);
+    this.configuration = config;
 
     node.resources = [
       {
@@ -32,9 +36,6 @@ module.exports = function (RED) {
         name: 'relay', path: '/3312/0/5850', type: RESOURCE_TYPE.BOOLEAN, need: node.relay,
       },
     ];
-    sensorMethods.initialize(node, config);
-    sensorMethods.setStatus(node);
-    sensorMethods.registerEvents(node);
 
     node.on('input', (msg) => {
       let relayState;
@@ -50,6 +51,8 @@ module.exports = function (RED) {
         value: relayState,
       }));
     });
+    
+    new genericSensor.Sensor(this);
   }
 
   RED.nodes.registerType('sensor3700 in', SensorNode);

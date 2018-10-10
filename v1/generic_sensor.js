@@ -5,24 +5,16 @@ const restAPI = require('restserver-api');
 const { Lwm2m } = restAPI;
 const { RESOURCE_TYPE, encodeResource, decodeResource } = Lwm2m.TLV;
 
-module.exports = {
-  initialize(node, config) {
-    node.service.attach(node);
-    node.observationInterval = Number(config.interval);
-    node.device = new restAPI.Device(node.service.service, config.uuid);
+class Sensor {
+  constructor(node) {
     node.state = false;
     node.cache = {};
-  },
-  setStatus(node, state) {
-    if (state) {
-      node.status({ fill: 'green', shape: 'dot', text: 'connected' });
-    } else if (state !== undefined && !state) {
-      node.status({ fill: 'red', shape: 'dot', text: 'disconnected' });
-    } else if (!state) {
-      node.status({ fill: 'grey', shape: 'dot', text: 'unknown' });
-    }
-  },
-  registerEvents(node) {
+    node.resources = node.resources;
+    node.observationInterval = Number(node.configuration.interval);
+    node.name = node.configuration.uuid;
+
+    this.setStatus(node);
+
     node.device.on('register', () => {
       const msg = {};
       msg.payload = {};
@@ -73,6 +65,7 @@ module.exports = {
             msg.payload.data = {};
             msg.payload.cache = node.cache;
             node.send(msg);
+            console.log('GET OBJECTS 404 CATCH');
           } else {
             node.error(`Error getting objects for endpoint, code: ${err}`);
           }
@@ -98,27 +91,21 @@ module.exports = {
         done();
       });
     });
-  },
-  configure(node) {
-    node.device.write('/1/0/3', () => {
-    }, encodeResource({
-      identifier: 3,
-      type: RESOURCE_TYPE.INTEGER,
-      value: node.observationInterval,
-    })).then(() => {
-      node.resources.forEach((resource) => {
-        if (resource.need) {
-          this.observe(node, resource.path, resource.name, resource.type);
-        }
-      });
-    }).catch((err) => {
-      if (typeof err === 'number') {
-        node.error(`Error setting observation time interval, code: ${err}`);
-      } else {
-        node.error(err);
-      }
-    });
-  },
+
+
+    this.node = node;
+  }
+
+  setStatus(node, state) {
+    if (state) {
+      node.status({ fill: 'green', shape: 'dot', text: 'connected' });
+    } else if (state !== undefined && !state) {
+      node.status({ fill: 'red', shape: 'dot', text: 'disconnected' });
+    } else if (!state) {
+      node.status({ fill: 'grey', shape: 'dot', text: 'unknown' });
+    }
+  }
+
   observe(node, resourcePath, resourceName, resourceType) {
     node.device.observe(resourcePath, (err, response) => {
       const msg = {};
@@ -149,5 +136,28 @@ module.exports = {
         node.error(err);
       }
     });
-  },
-};
+  }
+
+  configure(node) {
+    node.device.write('/1/0/3', () => {
+    }, encodeResource({
+      identifier: 3,
+      type: RESOURCE_TYPE.INTEGER,
+      value: node.observationInterval,
+    })).then(() => {
+      node.resources.forEach((resource) => {
+        if (resource.need) {
+          this.observe(node, resource.path, resource.name, resource.type);
+        }
+      });
+    }).catch((err) => {
+      if (typeof err === 'number') {
+        node.error(`Error setting observation time interval, code: ${err}`);
+      } else {
+        node.error(err);
+      }
+    });
+  }
+}
+
+module.exports.Sensor = Sensor;

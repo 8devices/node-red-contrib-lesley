@@ -7,26 +7,15 @@ const { Lwm2m } = restAPI;
 const { RESOURCE_TYPE, encodeResource, decodeResource } = Lwm2m.TLV;
 
 module.exports = function (RED) {
-  console.log('EXPORTS');
-  let module_export = new genericSensor.Sensor(RED);
-
   function SensorNode(config) {
-    console.log('NODE FUNCTION');
-    //const nodeFunction = new genericSensor.Sensor(RED);
     RED.nodes.createNode(this, config);
-    const node = this;
-    node.service = RED.nodes.getNode(config.service);
-    node.service.attach(node);
-
-    node.observationInterval = Number(config.interval);
-    node.name = config.uuid;
-    node.paths = [];
-    node.device = new restAPI.Device(node.service.service, node.name);
-        console.log( node.device);
-
-    node.state = false;
-    node.cache = {};
-    node.resources = [
+    this.service = RED.nodes.getNode(config.service);
+    this.service.attach(this);
+    this.observationInterval = Number(config.interval);
+    this.name = config.uuid;
+    this.device = new restAPI.Device(this.service.service, this.name);
+    this.configuration = config;
+    this.resources = [
       {
         name: 'batteryVoltage', path: '/3/0/7', type: RESOURCE_TYPE.INTEGER, need: config.batteryVoltage,
       },
@@ -83,24 +72,22 @@ module.exports = function (RED) {
       },
     ];
 
-    node.on('input', (msg) => {
+    this.on('input', (msg) => {
       if (typeof msg.payload === 'string' || typeof msg.payload === 'number') {
         const argument = msg.payload.toString();
-        node.device.write('/3341/0/5527', () => {
+        this.device.write('/3341/0/5527', () => {
         }, encodeResource({
           identifier: 5527,
           type: RESOURCE_TYPE.STRING,
           value: argument,
         }));
       } else {
-        node.error('Input message payload should be a number or a string');
+        this.error('Input message payload should be a number or a string');
       }
     });
-  }
-  console.log("^^^^^^^^^^^^^^^^");
-  console.log(module_export);
-  module_export.initilize();
-  console.log("^^^^^^^^^^^^^^^^");
 
-  RED.nodes.registerType('sensor5200 in', module_export.initilize);
+    new genericSensor.Sensor(this);
+  }
+
+  RED.nodes.registerType('sensor5200 in', SensorNode);
 };
