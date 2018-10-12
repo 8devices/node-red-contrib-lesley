@@ -5,159 +5,189 @@ const restAPI = require('restserver-api');
 const { Lwm2m } = restAPI;
 const { RESOURCE_TYPE, encodeResource, decodeResource } = Lwm2m.TLV;
 
-class Sensor {
-  constructor(node) {
-    node.state = false;
-    node.cache = {};
-    node.resources = node.resources;
-    node.observationInterval = Number(node.configuration.interval);
-    node.name = node.configuration.uuid;
+const STATE = {
+  INIT: 'initializing',
+  CONNECTED: 'connected',
+  DISCONNECTED: 'disconnected',
+};
 
-    this.setStatus(node);
+class ObserveSensorNode {
+  constructor(RED, config) {
+    RED.nodes.createNode(this, config);
 
-    node.device.on('register', () => {
+    // Parse configuration
+    this.serviceNode = RED.nodes.getNode(config.service);
+    this.name = config.uuid;
+    this.observationInterval = Number(config.interval || 60);
+
+    // Initialize core variables
+    this.device = new restAPI.Device(this.serviceNode.service, this.name);
+    this.resources = [];
+
+    this.state = '';
+    this.cache = {};
+
+    this.setState(STATE.INIT);
+
+    this.serviceNode.attach(this);
+
+    this.device.on('register', () => {
+      this.setState(STATE.CONNECTED);
+
       const msg = {};
-      msg.payload = {};
-      node.state = true;
-      this.setStatus(node, node.state);
-      msg.payload.state = node.state;
-      msg.payload.data = {};
-      msg.payload.cache = node.cache;
-      node.send(msg);
-      this.configure(node);
+      msg.payload = {
+        state: this.state,
+        data: {},
+        cache: Object.assign({}, this.cache),
+      };
+      this.send(msg);
+
+      this.configure();
     });
 
-    node.device.on('update', () => {
-      node.state = true;
-      this.setStatus(node, node.state);
+    this.device.on('update', () => {
+      this.setState(STATE.CONNECTED);
     });
 
-    node.device.on('deregister', () => {
+    this.device.on('deregister', () => {
+      this.setState(STATE.DISCONNECTED);
+
       const msg = {};
-      msg.payload = {};
-      node.state = false;
-      this.setStatus(node, node.state);
-      msg.payload.state = node.state;
-      msg.payload.data = {};
-      msg.payload.cache = node.cache;
-      node.send(msg);
+      msg.payload = {
+        state: this.state,
+        data: {},
+        cache: Object.assign({}, this.cache),
+      };
+      this.send(msg);
     });
 
-    node.service.on('started', () => {
-      node.device.getObjects().then(() => {
+    this.serviceNode.on('started', () => {
+      this.device.getObjects().then(() => {
+        this.setState(STATE.CONNECTED);
+
         const msg = {};
-        msg.payload = {};
-        node.state = true;
-        this.setStatus(node, node.state);
-        msg.payload.state = node.state;
-        msg.payload.data = {};
-        msg.payload.cache = node.cache;
-        node.send(msg);
-        this.configure(node);
+        msg.payload = {
+          state: this.state,
+          data: {},
+          cache: Object.assign({}, this.cache),
+        };
+        this.send(msg);
+
+        this.configure();
       }).catch((err) => {
         if (typeof err === 'number') {
           if (err === 404) {
+            this.setState(STATE.DISCONNECTED);
+
             const msg = {};
-            msg.payload = {};
-            node.state = false;
-            this.setStatus(node, node.state);
-            msg.payload.state = node.state;
-            msg.payload.data = {};
-            msg.payload.cache = node.cache;
-            node.send(msg);
-            console.log('GET OBJECTS 404 CATCH');
+            msg.payload = {
+              state: this.state,
+              data: {},
+              cache: Object.assign({}, this.cache),
+            };
+            this.send(msg);
           } else {
-            node.error(`Error getting objects for endpoint, code: ${err}`);
+            this.error(`Error getting objects for endpoint, code: ${err}`);
           }
         } else {
-          node.error(err);
+          this.error(err);
         }
       });
     });
 
-    node.on('close', (done) => {
-      const cancelObservationPromises = [];
+    this.on('close', (done) => {
+      const promises = [];
 
-      for (let i = 0; i < node.resources.length; i += 1) {
-        if (node.resources[i].observeAsyncID !== undefined) {
-          cancelObservationPromises.push(node.device.cancelObserve(node.resources[i].path));
+      for (let i = 0; i < this.resources.length; i += 1) {
+        if (this.resources[i].observeAsyncID !== undefined) {
+          promises.push(this.device.cancelObserve(this.resources[i].path));
         }
       }
 
-      Promise.all(cancelObservationPromises).catch((err) => {
-        node.error(err);
+      Promise.all(promises).catch((err) => {
+        this.error(err);
       }).finally(() => {
-        node.service.detach(node);
+        this.serviceNode.detach(this);
         done();
       });
     });
-
-
-    this.node = node;
   }
 
-  setStatus(node, state) {
-    if (state) {
-      node.status({ fill: 'green', shape: 'dot', text: 'connected' });
-    } else if (state !== undefined && !state) {
-      node.status({ fill: 'red', shape: 'dot', text: 'disconnected' });
-    } else if (!state) {
-      node.status({ fill: 'grey', shape: 'dot', text: 'unknown' });
+  setState(state) {
+    this.state = state;
+
+    const status = {
+      fill: 'grey',
+      shape: 'dot',
+      text: state,
+    };
+
+    if (state === STATE.CONNECTED) {
+      status.fill = 'green';
+    } else if (state === STATE.DISCONNECTED) {
+      status.fill = 'red';
     }
+
+    this.status(status);
   }
 
-  observe(node, resourcePath, resourceName, resourceType) {
-    node.device.observe(resourcePath, (err, response) => {
-      const msg = {};
+  observe(resourcePath, resourceName, resourceType) {
+    this.device.observe(resourcePath, (err, response) => {
       const buffer = Buffer.from(response, 'base64');
       const decodedResource = decodeResource(buffer, {
         identifier: Number(resourcePath.split('/')[3]),
         type: resourceType,
       });
       const resourceValue = decodedResource.value;
+
+      this.cache[resourceName] = resourceValue;
+
+      const msg = {};
       msg.payload = {
-        state: node.state,
+        state: this.state,
         data: {},
+        cache: Object.assign({}, this.cache),
       };
       msg.payload.data[resourceName] = resourceValue;
-      node.cache[resourceName] = resourceValue;
-      msg.payload.cache = node.cache;
-      node.send(msg);
+      this.send(msg);
     }).then((resp) => {
-      for (let i = 0; i < node.resources.length; i += 1) {
-        if (node.resources[i].name === resourceName) {
-          node.resources[i].observeAsyncID = resp;
+      for (let i = 0; i < this.resources.length; i += 1) {
+        if (this.resources[i].name === resourceName) {
+          this.resources[i].observeAsyncID = resp;
         }
       }
     }).catch((err) => {
       if (typeof err === 'number') {
-        node.error(`Error starting observation, code: ${err}`);
+        this.error(`Error starting observation, code: ${err}`);
       } else {
-        node.error(err);
+        this.error(err);
       }
     });
   }
 
-  configure(node) {
-    node.device.write('/1/0/3', () => {
-    }, encodeResource({
-      identifier: 3,
-      type: RESOURCE_TYPE.INTEGER,
-      value: node.observationInterval,
-    })).then(() => {
-      node.resources.forEach((resource) => {
+  configure() {
+    this.device.write(
+      '/1/0/3',
+      () => { },
+      encodeResource({
+        identifier: 3,
+        type: RESOURCE_TYPE.INTEGER,
+        value: this.observationInterval,
+      }),
+    ).then(() => {
+      this.resources.forEach((resource) => {
         if (resource.need) {
-          this.observe(node, resource.path, resource.name, resource.type);
+          this.observe(resource.path, resource.name, resource.type);
         }
       });
     }).catch((err) => {
       if (typeof err === 'number') {
-        node.error(`Error setting observation time interval, code: ${err}`);
+        this.error(`Error setting observation time interval, code: ${err}`);
       } else {
-        node.error(err);
+        this.error(err);
       }
     });
   }
 }
 
-module.exports.Sensor = Sensor;
+module.exports.ObserveSensorNode = ObserveSensorNode;
