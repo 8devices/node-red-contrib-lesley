@@ -1,7 +1,7 @@
 {
   "name": "node-red-contrib-lesley",
-  "version": "0.0.1",
-  "description": "",
+  "version": "0.1.0",
+  "description": "NodeRed modules for 8devices IoT platform",
   "main": "nodes/service-lesley.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -38,7 +38,7 @@
     "express": "^4.16.1",
     "node-rest-client": "^3.1.0",
     "promise": "^8.0.1",
-    "restserver-api": "git+https://github.com/8devices/restserver-api.git"
+    "restserver-api": "^0.1.0"
   },
   "devDependencies": {
     "eslint": "^4.6.1",
